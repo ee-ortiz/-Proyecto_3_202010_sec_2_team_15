@@ -3,6 +3,7 @@ package model.logic;
 import model.data_structures.ArregloDinamico;
 import model.data_structures.Comparendo;
 import model.data_structures.IArregloDinamico;
+import model.data_structures.LinearProbing;
 import model.data_structures.SeparateChaining;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public class Modelo {
 	 * Atributos del modelo del mundo
 	 */
 	private SeparateChaining<String, Comparendo> comps;
+	private LinearProbing<String, Comparendo> comps2;
 	private GeoJSONProcessing objetoJsonGson;
 	private int numeroMInicial;
 
@@ -28,6 +30,7 @@ public class Modelo {
 	public Modelo()
 	{
 		comps = new SeparateChaining<>(2741);
+		comps2 = new LinearProbing<>(300000);//linearProbing
 		numeroMInicial = comps.TamañoDeLaHastTable();
 		objetoJsonGson = new GeoJSONProcessing();
 	}
@@ -41,48 +44,7 @@ public class Modelo {
 		return comps.size();
 	}
 
-
-	/**
-	 * Requerimiento buscar dato
-	 * @param dato Dato a buscar
-	 * @return dato encontrado
-	 */
-	public ArrayList<Comparendo> getSet(String dato)
-	{
-		ArrayList<Comparendo> rta = comps.getSetArray(dato);
-
-		return rta;
-	}
-
-	/**
-	 * Requerimiento eliminar dato
-	 * @param dato Dato a eliminar
-	 * @return dato eliminado
-	 */
-	public String eliminar(String dato)
-	{
-		return null;
-	}
-
-
-	public void cargar(String direccion){
-
-		objetoJsonGson.cargarDatos(comps, direccion);
-
-
-	}
-
-
-	public String RetornarDatos(Comparendo comp){
-		//INFRACCION, OBJECTID,
-		//FECHA_HORA, CLASE_VEHI, TIPO_SERVI, LOCALIDAD.
-		String rta = "Codigo de infraccion: "+comp.INFRACCION +" ObjectID: " + comp.OBJECTID + " Fecha y hora: " + comp.FECHA_HORA + " Clase de vehiculo "+comp.CLASE_VEHI + " Tipo de servicio: " +
-				comp.TIPO_SERVI + " Localidad: "+ comp.LOCALIDAD;
-		return rta;
-	}
-
-
-	// solucion adaptada de las presentaciones de sicua
+	
 	public void shellSort(Comparable datos[]){
 
 		int tamano = datos.length;
@@ -253,10 +215,61 @@ public class Modelo {
 
 		}
 	}
+	/**
+	 * Requerimiento buscar dato
+	 * @param dato Dato a buscar
+	 * @return dato encontrado
+	 */
+	public ArrayList<Comparendo> getSet(String dato)
+	{
+		ArrayList<Comparendo> rta = comps.getSetArray(dato);
+
+		return rta;
+	}
+
+	/**
+	 * Requerimiento eliminar dato
+	 * @param dato Dato a eliminar
+	 * @return dato eliminado
+	 */
+	public String eliminar(String dato)
+	{
+		return null;
+	}
+
+
+	public void cargar(String direccion){
+
+		objetoJsonGson.cargarDatos(comps, direccion);
+
+		objetoJsonGson.cargarDatos(comps2, direccion);
+	}
+
+
+	public String RetornarDatos(Comparendo comp){
+		//INFRACCION, OBJECTID,
+		//FECHA_HORA, CLASE_VEHI, TIPO_SERVI, LOCALIDAD.
+		String rta = "Codigo de infraccion: "+comp.INFRACCION +" ObjectID: " + comp.OBJECTID + " Fecha y hora: " + comp.FECHA_HORA + " Clase de vehiculo "+comp.CLASE_VEHI + " Tipo de servicio: " +
+				comp.TIPO_SERVI + " Localidad: "+ comp.LOCALIDAD;
+		return rta;
+	}
+
+
+
+	
+
 
 	public SeparateChaining<String, Comparendo> darSeparateChaining(){
 
 		return comps;
+	}
+	/**
+	 * retorna el lineal probing
+	 * @return
+	 */
+	public LinearProbing<String, Comparendo> darLinearProbing(){
+
+		return comps2;
 	}
 
 	public GeoJSONProcessing darObjetoJsonGson(){

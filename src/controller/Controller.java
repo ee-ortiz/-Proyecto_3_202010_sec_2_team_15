@@ -12,6 +12,7 @@ import model.data_structures.Comparendo;
 import model.data_structures.IArregloDinamico;
 import model.data_structures.ICola;
 import model.data_structures.IPila;
+import model.data_structures.LinearProbing;
 import model.data_structures.Queue;
 import model.data_structures.SeparateChaining;
 import model.logic.GeoJSONProcessing;
@@ -33,6 +34,7 @@ public class Controller {
 	private Comparable<Comparendo>[] aOrdenar;
 	private Comparable<Comparendo>[] copiaPrimera;
 	SeparateChaining<String, Comparendo> comps;
+	LinearProbing<String, Comparendo> comps2;
 
 	/**
 	 * Crear la vista y el modelo del proyecto
@@ -96,7 +98,73 @@ public class Controller {
 
 
 			case 2:
+				boolean noExisteMas;
 				//caso andres
+				view.printMessage("Ingrese una fecha de la siguiente forma (2018/12/24) si el mes o dia es de un solo dígito por favor ingrese un '0' antes (2018/02/04) ");
+
+				String key1 = "";
+				String fechaKey1 = lector.next();
+				String fechasKeys1[] = fechaKey1.split("/");
+
+				try{
+					if(fechasKeys1[1].length() ==1){
+						fechasKeys1[1] = "0" + fechasKeys1[1];
+					}
+					if(fechasKeys1[2].length() ==1){
+						fechasKeys1[2] = "0" + fechasKeys1[2];
+					}
+
+					fechaKey1 = fechasKeys1[0] + fechasKeys1[1] + fechasKeys1[2];
+
+				}
+
+				catch (Exception e){
+
+					view.printMessage("Fecha inválida");
+					break;
+
+				}
+
+				view.printMessage("Ingrese una clase de vehiculo de la siguiente forma (MOTOCICLETA) si la palabra tiene tilde por favor escribala ");
+				String claseVehiKey1 = lector.next().trim();
+
+				view.printMessage("Ingrese una infraccion de la siguiente forma (C02) ");
+				String infraccionKey1 = lector.next().trim();
+
+				key1 = fechaKey1+ claseVehiKey1 + infraccionKey1;
+				IArregloDinamico<Comparendo> buscados1 = new ArregloDinamico<>(20);
+				ArrayList temp= comps2.getArray(key1);
+				int cont=0;
+				if(temp.isEmpty()!=true)
+			{
+					
+				while(cont<temp.size()){
+					Comparendo a = (Comparendo) temp.get(cont);
+				buscados1.agregar(a);
+				}
+				
+				Comparable[] comparableBuscados1 = modelo.copiarArreglo(buscados1);
+					modelo.sortParaMerge(comparableBuscados1, "descendente", null);
+
+					IArregloDinamico<Comparendo> rta1 = modelo.retornarArregloDeComparendos(comparableBuscados1);
+
+					view.printMessage("El numero de comparendos existentes con la fecha, clase de vehiculo e infraccion que ingresaste es: " + rta1.darTamano());
+					view.printMessage("Los comparendos son: ");
+					for(int i = 0; i<rta1.darTamano(); i++){
+
+						view.printMessage("-" + rta1.darElemento(i).retornarDatosTaller5());
+					}
+
+				}
+			
+				else{
+
+					view.printMessage("La llave ingresada no existe");
+				}
+
+				view.printMessage("");
+
+				
 
 				break;
 
