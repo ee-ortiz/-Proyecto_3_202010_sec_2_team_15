@@ -136,14 +136,14 @@ public class Controller {
 				ArrayList temp= comps2.getArray(key1);
 				int cont=0;
 				if(temp.isEmpty()!=true)
-			{
-					
-				while(cont<temp.size()){
-					Comparendo a = (Comparendo) temp.get(cont);
-				buscados1.agregar(a);
-				}
-				
-				Comparable[] comparableBuscados1 = modelo.copiarArreglo(buscados1);
+				{
+
+					while(cont<temp.size()){
+						Comparendo a = (Comparendo) temp.get(cont);
+						buscados1.agregar(a);
+					}
+
+					Comparable[] comparableBuscados1 = modelo.copiarArreglo(buscados1);
 					modelo.sortParaMerge(comparableBuscados1, "descendente", null);
 
 					IArregloDinamico<Comparendo> rta1 = modelo.retornarArregloDeComparendos(comparableBuscados1);
@@ -156,7 +156,7 @@ public class Controller {
 					}
 
 				}
-			
+
 				else{
 
 					view.printMessage("La llave ingresada no existe");
@@ -164,7 +164,7 @@ public class Controller {
 
 				view.printMessage("");
 
-				
+
 
 				break;
 
