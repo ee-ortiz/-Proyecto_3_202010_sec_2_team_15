@@ -24,12 +24,6 @@ public class TestModelo {
 
 	public void setUp2() {
 
-		modelo.cargar(PATH);
-		for(int i = 0; i< 8; i++){
-			Comparendo comp = new Comparendo();
-			comp.INFRACCION = "Prueba Infraccion";
-			modelo.darArreglo().agregar(comp);
-		}
 
 	}
 
@@ -38,12 +32,7 @@ public class TestModelo {
 	@Test
 	public void testComprobarCargaYAgregar() {
 
-		setUp1();
-		setUp2();
-		int num = modelo.darArreglo().darTamano();
-		assertEquals(28, num);
-		String infrac = modelo.darArreglo().darElemento(27).INFRACCION;
-		assertEquals("Prueba Infraccion", infrac);
+
 
 	}
 

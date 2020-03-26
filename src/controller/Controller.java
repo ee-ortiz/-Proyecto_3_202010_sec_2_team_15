@@ -63,25 +63,42 @@ public class Controller {
 					modelo = new Modelo();
 
 					long start = System.currentTimeMillis();
-					modelo.cargar(PATH2);			
+					modelo.cargar(PATH2);		
 					long end = System.currentTimeMillis();
 					view.printMessage("Tiempo de carga (s): " + (end-start)/1000.0);
 
 					comps = modelo.darSeparateChaining();	
 
+					comps2 = modelo.darLinearProbing();
+
 					view.printMessage("El Total de comparendos leidos es: " + (int)comps.numeroTotalDeValores());
 
 					modelo.darObjetoJsonGson().retornarPrimerYUltimoComparendo();
 
+					System.out.println("----------------");
+
 					view.printMessage("El numero de duplas  (K, V) del Separate Chaining (valor N) es: " + comps.size());
 
-					view.printMessage("El tamaño inicial (valor M inicial) del Separate Chaining es: " + modelo.darNumeroMInicial());
+					view.printMessage("El tamaño inicial (valor M inicial) del Separate Chaining es: " + modelo.darNumeroMInicialSP());
 
 					view.printMessage("El tamaño final (valor M final) del Separate Chaining es: " + comps.TamañoDeLaHastTable());
 
 					view.printMessage("El factor de carga final (N/M) del Separate Chaining es: " + (double)comps.size()/(double)comps.TamañoDeLaHastTable());
 
 					view.printMessage("El numero de rehashes que tuvo el Separate Chaining es: " + comps.darNumeroReHashes());
+
+					System.out.println("----------------");
+
+					view.printMessage("El numero de duplas  (K, V) del Linear Probing (valor N) es: " + comps2.size());
+
+					view.printMessage("El tamaño inicial (valor M inicial) del Linear Probing es: " + modelo.darNumeroMInicialLP());
+
+					view.printMessage("El tamaño final (valor M final) del Linear Probing es: " + comps2.darTamanoHashTable());
+
+					view.printMessage("El factor de carga final (N/M) del Linear Probing es: " + (double)comps2.size()/(double)comps2.darTamanoHashTable());
+
+					view.printMessage("El numero de rehashes que tuvo el Linear Probing es: " + comps2.darNumeroReHashes());
+
 
 					cargado = true;
 
@@ -98,8 +115,6 @@ public class Controller {
 
 
 			case 2:
-				boolean noExisteMas;
-				//caso andres
 				view.printMessage("Ingrese una fecha de la siguiente forma (2018/12/24) si el mes o dia es de un solo dígito por favor ingrese un '0' antes (2018/02/04) ");
 
 				String key1 = "";
@@ -132,27 +147,31 @@ public class Controller {
 				String infraccionKey1 = lector.next().trim();
 
 				key1 = fechaKey1+ claseVehiKey1 + infraccionKey1;
-				IArregloDinamico<Comparendo> buscados1 = new ArregloDinamico<>(20);
-				ArrayList temp= comps2.getArray(key1);
-				int cont=0;
-				if(temp.isEmpty()!=true)
-				{
 
-					while(cont<temp.size()){
-						Comparendo a = (Comparendo) temp.get(cont);
-						buscados1.agregar(a);
+				Iterator<Comparendo> iter1 = comps.getSet(key1);
+
+				if(iter1!=null){
+
+					IArregloDinamico<Comparendo> buscados = new ArregloDinamico<>(20);
+
+					while(iter1.hasNext()){
+
+						Comparendo elemento = iter1.next();
+
+						buscados.agregar(elemento);
+
 					}
 
-					Comparable[] comparableBuscados1 = modelo.copiarArreglo(buscados1);
-					modelo.sortParaMerge(comparableBuscados1, "descendente", null);
+					Comparable[] comparableBuscados = modelo.copiarArreglo(buscados);
+					modelo.sortParaMerge(comparableBuscados, "descendente", null);
 
-					IArregloDinamico<Comparendo> rta1 = modelo.retornarArregloDeComparendos(comparableBuscados1);
+					IArregloDinamico<Comparendo> rta = modelo.retornarArregloDeComparendos(comparableBuscados);
 
-					view.printMessage("El numero de comparendos existentes con la fecha, clase de vehiculo e infraccion que ingresaste es: " + rta1.darTamano());
+					view.printMessage("El numero de comparendos existentes con la fecha, clase de vehiculo e infraccion que ingresaste es: " + rta.darTamano());
 					view.printMessage("Los comparendos son: ");
-					for(int i = 0; i<rta1.darTamano(); i++){
+					for(int i = 0; i<rta.darTamano(); i++){
 
-						view.printMessage("-" + rta1.darElemento(i).retornarDatosTaller5());
+						view.printMessage("-" + rta.darElemento(i).retornarDatosTaller5());
 					}
 
 				}
@@ -163,8 +182,6 @@ public class Controller {
 				}
 
 				view.printMessage("");
-
-
 
 				break;
 
