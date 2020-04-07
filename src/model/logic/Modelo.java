@@ -4,6 +4,7 @@ import model.data_structures.ArregloDinamico;
 import model.data_structures.Comparendo;
 import model.data_structures.IArregloDinamico;
 import model.data_structures.LinearProbing;
+import model.data_structures.RedBlackBST;
 import model.data_structures.SeparateChaining;
 
 import java.util.ArrayList;
@@ -18,22 +19,15 @@ public class Modelo {
 	/**
 	 * Atributos del modelo del mundo
 	 */
-	private SeparateChaining<String, Comparendo> comps;
-	private LinearProbing<String, Comparendo> comps2;
+	private RedBlackBST<Integer, Comparendo> comps;
 	private GeoJSONProcessing objetoJsonGson;
-	private int numeroMInicialSP;
-	private int numeroMInicialLP;
-
 
 	/**
 	 * Constructor del modelo del mundo con capacidad predefinida
 	 */
 	public Modelo()
 	{
-		comps = new SeparateChaining<>(3011);
-		comps2 = new LinearProbing<>(20011);
-		numeroMInicialSP = comps.TamañoDeLaHastTable();
-		numeroMInicialLP = comps2.darTamanoHashTable();
+		comps = new RedBlackBST<Integer, Comparendo>();
 		objetoJsonGson = new GeoJSONProcessing();
 	}
 
@@ -222,9 +216,9 @@ public class Modelo {
 	 * @param dato Dato a buscar
 	 * @return dato encontrado
 	 */
-	public ArrayList<Comparendo> getSet(String dato)
+	public Comparendo get(int dato)
 	{
-		ArrayList<Comparendo> rta = comps.getSetArray(dato);
+		Comparendo rta = comps.get(dato);
 
 		return rta;
 	}
@@ -242,7 +236,7 @@ public class Modelo {
 
 	public void cargar(String direccion){
 
-		objetoJsonGson.cargarDatos(comps, comps2, direccion);
+		objetoJsonGson.cargarDatos(comps, direccion);
 
 	}
 
@@ -255,22 +249,9 @@ public class Modelo {
 		return rta;
 	}
 
-
-
-
-
-
-	public SeparateChaining<String, Comparendo> darSeparateChaining(){
+	public RedBlackBST<Integer, Comparendo> darRedBlackBST(){
 
 		return comps;
-	}
-	/**
-	 * retorna el lineal probing
-	 * @return
-	 */
-	public LinearProbing<String, Comparendo> darLinearProbing(){
-
-		return comps2;
 	}
 
 	public GeoJSONProcessing darObjetoJsonGson(){
@@ -278,15 +259,6 @@ public class Modelo {
 		return objetoJsonGson;
 	}
 
-	public int darNumeroMInicialSP(){
-
-		return numeroMInicialSP;
-	}
-
-	public int darNumeroMInicialLP(){
-
-		return numeroMInicialLP;
-	}
 
 	public static Comparendo cambiarDeComparableAComparendo(Comparable a){
 
@@ -322,150 +294,22 @@ public class Modelo {
 
 	}
 
+
+	public void requerimiento1Cargar(){
+
+		objetoJsonGson.retornarRequerimientoCargar();
+
+	}
+
+	public void requerimiento2(int objectID){
+
+		Comparendo rta = comps.get(objectID);
+
+		if(rta != null) System.out.println("Comparendo encontrado, sus datos son: " + rta.retornarDatosTaller6());
+		else System.out.println("No existe un comparendo con ese ObjectID");
+
+	}
 	public void requerimiento3(){
-
-		Iterator<String> iter = comps.keys();
-		int conteo = 0;
-
-		double tiempoMinimoGetSC = 50.0;
-		double tiempoPromedioGetSC = 0.0;
-		double tiempoMaximoGetSC = -50.0;
-
-		// 8000 llaves conocidas
-		while(iter.hasNext() && conteo<8000 ){
-
-			String keyAct = iter.next();
-
-			long start = System.currentTimeMillis();
-
-			// consulto la llave
-			comps.getSet(keyAct);
-
-			long end = System.currentTimeMillis();
-
-			double tiempo = (end-start)/1000.0;
-
-			if(tiempo>tiempoMaximoGetSC){
-				tiempoMaximoGetSC = tiempo;
-			}
-
-			if(tiempo<tiempoMinimoGetSC){
-				tiempoMinimoGetSC = tiempo;
-			}
-
-			tiempoPromedioGetSC = tiempoPromedioGetSC + tiempo;
-
-			conteo++;
-		}
-
-		int conteo2 = 0;
-
-		String prueba = "2017";
-
-		// 2000 llaves desconocidas
-		while(conteo2<2000 ){
-
-			String keyAct1 = prueba + conteo;
-
-			long start = System.currentTimeMillis();
-
-			// consulto la llave
-			comps.getSet(keyAct1);
-
-			long end = System.currentTimeMillis();
-
-			double tiempo = (end-start)/1000.0;
-
-			if(tiempo>tiempoMaximoGetSC){
-				tiempoMaximoGetSC = tiempo;
-			}
-
-			if(tiempo<tiempoMinimoGetSC){
-				tiempoMaximoGetSC = tiempo;
-			}
-
-			tiempoPromedioGetSC = tiempoPromedioGetSC + tiempo;
-
-			conteo2++;
-		}
-
-		tiempoPromedioGetSC = tiempoPromedioGetSC/10000;
-
-		System.out.println("El tiempo minimo del metodo getSet() en Separate Chaining fue: " + tiempoMinimoGetSC + " segundos");
-		System.out.println("El tiempo máximo del metodo getSet() en Separate Chaining fue: " + tiempoMaximoGetSC + " segundos");
-		System.out.println("El tiempo promedio del metodo getSet() en Separate Chaining fue: " + tiempoPromedioGetSC + " segundos");
-
-		Iterator<String> iter2 = comps2.keys();
-		conteo = 0;
-
-		double tiempoMinimoGetLP = 50.0;
-		double tiempoPromedioGetLP = 0.0;
-		double tiempoMaximoGetLP = -50.0;
-
-		// 8000 llaves conocidas
-		while(iter.hasNext() && conteo<8000 ){
-
-			String keyAct = iter.next();
-
-			long start = System.currentTimeMillis();
-
-			// consulto la llave
-			comps2.getSet(keyAct);
-
-			long end = System.currentTimeMillis();
-
-			double tiempo = (end-start)/1000.0;
-
-			if(tiempo>tiempoMaximoGetLP){
-				tiempoMaximoGetLP = tiempo;
-			}
-
-			if(tiempo<tiempoMinimoGetLP){
-				tiempoMinimoGetLP = tiempo;
-			}
-
-			tiempoPromedioGetLP = tiempoPromedioGetLP + tiempo;
-
-			conteo++;
-		}
-
-		conteo2 = 0;
-
-		prueba = "2017";
-
-		// 2000 llaves desconocidas
-		while(conteo2<2000 ){
-
-			String keyAct1 = prueba + conteo;
-
-			long start = System.currentTimeMillis();
-
-			// consulto la llave
-			comps2.getSet(keyAct1);
-
-			long end = System.currentTimeMillis();
-
-			double tiempo = (end-start)/1000.0;
-
-			if(tiempo>tiempoMaximoGetLP){
-				tiempoMaximoGetLP = tiempo;
-			}
-
-			if(tiempo<tiempoMinimoGetLP){
-				tiempoMaximoGetLP = tiempo;
-			}
-
-			tiempoPromedioGetLP = tiempoPromedioGetLP + tiempo;
-
-			conteo2++;
-		}
-
-		tiempoPromedioGetLP = tiempoPromedioGetLP/10000;
-
-		System.out.println("----------------");
-		System.out.println("El tiempo minimo del metodo getSet() en Linear Probing fue: " + tiempoMinimoGetLP + " segundos");
-		System.out.println("El tiempo máximo del metodo getSet() en Linear Probing fue: " + tiempoMaximoGetLP + " segundos");
-		System.out.println("El tiempo promedio del metodo getSet() en Linear Probing fue: " + tiempoPromedioGetLP + " segundos");
 
 	}
 

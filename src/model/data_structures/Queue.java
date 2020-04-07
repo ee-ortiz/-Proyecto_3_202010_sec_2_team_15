@@ -52,6 +52,11 @@ public class Queue<Item> implements Iterable<Item> {
 		return first.item;
 	}
 
+	public Item ultimo() {
+		if (isEmpty()) throw new NoSuchElementException("Queue underflow");
+		return last.item;
+	}
+
 	/**
 	 * Adds the item to this queue.
 	 *

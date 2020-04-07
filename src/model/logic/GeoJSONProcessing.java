@@ -23,17 +23,19 @@ import model.data_structures.ICola;
 import model.data_structures.IPila;
 import model.data_structures.LinearProbing;
 import model.data_structures.Pila;
+import model.data_structures.RedBlackBST;
 import model.data_structures.SeparateChaining;
 
 
 
 public class GeoJSONProcessing {
 
-	private Comparendo primerComparendo;
-	private Comparendo ultimoComparendo;
-	int tamaño=0;
+	private int valorMinimoObjectID;
+	private int valorMaximoObjectID;
+	private int tamano;
+
 	// Solucion de carga de datos publicada al curso Estructuras de Datos 2020-10
-	public void cargarDatos(SeparateChaining<String, Comparendo> hashTable1, LinearProbing<String, Comparendo> hashTable2, String direccion){
+	public void cargarDatos(RedBlackBST<Integer, Comparendo> comps, String direccion){
 
 		JsonReader reader;
 		try {
@@ -43,9 +45,6 @@ public class GeoJSONProcessing {
 
 			SimpleDateFormat parser=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-			Comparendo primero = null;
-			Comparendo ultimo = null;
-			boolean compPrimero = false;
 
 			for(JsonElement e: e2) {
 				Comparendo c = new Comparendo();
@@ -83,41 +82,14 @@ public class GeoJSONProcessing {
 						.get(1).getAsDouble();
 
 
-				Calendar fecha = Calendar.getInstance();
-				fecha.setTime(c.FECHA_HORA);
-				int ano = fecha.get(Calendar.YEAR);
-				int mes = fecha.get(Calendar.MONTH) + 1;
-				int dia = fecha.get(Calendar.DAY_OF_MONTH);
+				comps.put(c.OBJECTID, c);
 
-				String mes1 = convertirIntAString(mes);
-				String dia1 = convertirIntAString(dia);
-
-				if(mes1.length() ==1){
-					mes1 = "0" + mes1;
-				}
-
-				if(dia1.length() ==1){
-					dia1 = "0" + dia1;
-				}
-
-
-				//(FECHA (año/mes/día),CLASE_VEHICULO, INFRACCION
-				String key = convertirIntAString(ano) + mes1 + dia1 +  c.CLASE_VEHI.trim() + c.INFRACCION.trim();
-
-				hashTable1.putInSet(key, c);
-				hashTable2.put(key, c);
-
-				ultimo = c;
-
-				if(compPrimero == false){
-					primero = c;
-					compPrimero = true;				
-				}
 
 			}
 
-			primerComparendo = primero;
-			ultimoComparendo = ultimo;
+			valorMaximoObjectID = comps.max();
+			valorMinimoObjectID = comps.min();
+			tamano = comps.size();
 
 
 		} 
@@ -135,10 +107,11 @@ public class GeoJSONProcessing {
 
 	}
 
-	public void retornarPrimerYUltimoComparendo(){
+	public void retornarRequerimientoCargar(){
 
-		System.out.println("El primer comparendo leido es: " + primerComparendo.retornarDatos());
-		System.out.println("El ultimo comparendo leido es: " + ultimoComparendo.retornarDatos());
+		System.out.println("El total de comparendos leidos es: " + tamano);
+		System.out.println("El valor mínimo de ObjectID leido es: " + valorMinimoObjectID);
+		System.out.println("El valor máximo de ObjectID leido es: " + valorMaximoObjectID);
 
 	}
 
