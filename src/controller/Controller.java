@@ -31,7 +31,7 @@ public class Controller {
 	private boolean cargado;
 	public static String PATH = "./data/comparendos_dei_2018_small.geojson";
 	public static String PATH2 = "./data/Comparendos_dei_2018_Bogotá_D.C.geojson";
-	public static String PATH3 = "./data/comparendos_mediano.geojson";
+	public static String PATH3 = "./data/Comparendos_DEI_2018_Bogotá_D.C_50000_.geojson";
 
 
 	/**
@@ -90,7 +90,12 @@ public class Controller {
 				break;
 
 			case 3:
-
+				view.printMessage("Ingresa un ObjectID de la siguiente forma(100000): el cual sera el menor valor");
+				int num1 = lector.nextInt();
+				view.printMessage("Ingresa un ObjectID de la siguiente forma(100000): el cual sera el mayor valor");
+				int num2 = lector.nextInt();
+				modelo.requerimiento3(num1, num2);
+				System.out.println();
 				// caso andrés
 				break;
 

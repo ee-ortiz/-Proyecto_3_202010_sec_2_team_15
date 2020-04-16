@@ -363,13 +363,28 @@ public class RedBlackBST<Key extends Comparable<Key>, Value> {
 	public int height() {
 		return height(root);
 	}
-
+	public int heightLeft() {
+		return heightLeft(root);
+	}
+	public int heightRight() {
+		return heightRight(root);
+	}
 	// Retorna la altura del camino desde la raiz para llegar al nodo x
 	public int height(Node x) {
 		if (x == null) return -1;
 		return 1 + Math.max(height(x.left), height(x.right));
 	}
-
+	
+	public int heightLeft(Node x) {
+		if (x == null) return -1;
+		return 1 + heightLeft(x.left);
+	}
+	
+	public int heightRight(Node x) {
+		if (x == null) return -1;
+		return 1 + heightRight(x.right);
+	}
+	
 	public int getHeight(Key key){
 
 		Node buscado = darNodo(key);

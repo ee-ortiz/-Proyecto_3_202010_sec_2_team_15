@@ -298,7 +298,10 @@ public class Modelo {
 	public void requerimiento1Cargar(){
 
 		objetoJsonGson.retornarRequerimientoCargar();
-
+		int max= comps.getHeight(comps.max());
+		int min= comps.getHeight(comps.min());
+		System.out.println(comps.heightLeft()+"a");
+		System.out.println(comps.heightRight()+"a");
 	}
 
 	public void requerimiento2(int objectID){
@@ -309,8 +312,21 @@ public class Modelo {
 		else System.out.println("No existe un comparendo con ese ObjectID");
 
 	}
-	public void requerimiento3(){
+	public void requerimiento3(int objectID_Inferior, int objectID_Superior){
+		Comparendo rta = comps.get(objectID_Inferior);
 
+		Comparendo rta2 = comps.get(objectID_Superior);
+		Iterator<Comparendo> a= comps.valuesInRange(objectID_Inferior, objectID_Superior);
+		if(rta!= null &&rta2!=null){
+			while(a.hasNext())
+				{
+				System.out.println(a.next().retornarDatos());
+				
+				};
+		}else
+			System.out.println("No existe un comparendo con alguno de esos ObjectIDS");
+			
 	}
+	
 
 }
