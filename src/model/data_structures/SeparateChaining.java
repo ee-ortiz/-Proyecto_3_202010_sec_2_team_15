@@ -82,7 +82,7 @@ public class SeparateChaining<Key, Value>
 		if (!st[i].contains(key)) N++;
 		st[i].put(key, val);
 
-		if ((double) N/(double)M > factorDeCargaMaximo) resize(siguientePrimo(M));
+		if ((double) N/(double)M > factorDeCargaMaximo) resize(siguientePrimo(2*M));
 	} 
 
 	public void putAHoleKeyWithValues(Key key, ArrayList<Value> vals){

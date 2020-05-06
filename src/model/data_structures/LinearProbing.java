@@ -113,7 +113,7 @@ public class LinearProbing<Key, Value> {
 		vals[i].add(val);
 		n++;
 
-		if ((double)n/(double)m > factorDeCargaMaximo ) resize(siguientePrimo(m));
+		if ((double)n/(double)m > factorDeCargaMaximo ) resize(siguientePrimo(2*m));
 	}
 
 	/**
