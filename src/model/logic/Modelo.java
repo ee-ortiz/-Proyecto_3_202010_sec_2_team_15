@@ -1,16 +1,31 @@
 package model.logic;
 
+import model.data_structures.Arco;
 import model.data_structures.ArregloDinamico;
 import model.data_structures.Comparendo;
+import model.data_structures.GrafoNoDirigido;
 import model.data_structures.IArregloDinamico;
 import model.data_structures.LinearProbing;
 import model.data_structures.RedBlackBST;
 import model.data_structures.SeparateChaining;
+import model.data_structures.Vertice;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Random;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 /**
  * Definicion del modelo del mundo
  *
@@ -21,6 +36,9 @@ public class Modelo {
 	 */
 	private RedBlackBST<Integer, Comparendo> comps;
 	private GeoJSONProcessing objetoJsonGson;
+	private CargaVerticesYArcos carga;
+	private GrafoNoDirigido<Integer, String> grafo;
+	public final static String PATH = "./data/GrafoJSON.geojson";
 
 	/**
 	 * Constructor del modelo del mundo con capacidad predefinida
@@ -29,6 +47,8 @@ public class Modelo {
 	{
 		comps = new RedBlackBST<Integer, Comparendo>();
 		objetoJsonGson = new GeoJSONProcessing();
+		grafo = new GrafoNoDirigido<>();
+		carga = new CargaVerticesYArcos();
 	}
 
 	/**
@@ -240,6 +260,11 @@ public class Modelo {
 
 	}
 
+	public void cargarGrafo(String direccion, String direccion2){
+
+		carga.cargarInformacion(grafo, direccion, direccion2);
+	}
+
 
 	public String RetornarDatos(Comparendo comp){
 		//INFRACCION, OBJECTID,
@@ -319,14 +344,137 @@ public class Modelo {
 		Iterator<Comparendo> a= comps.valuesInRange(objectID_Inferior, objectID_Superior);
 		if(rta!= null &&rta2!=null){
 			while(a.hasNext())
-				{
+			{
 				System.out.println(a.next().retornarDatos());
-				
-				};
+
+			};
 		}else
 			System.out.println("No existe un comparendo con alguno de esos ObjectIDS");
-			
-	}
-	
 
+	}
+
+	// se tiene en cuenta que el grafo ya esta inicializado
+	public void convertirAJSON(){
+
+		if(grafo.V() == 0){
+			return;
+		}
+
+		String archivo = "{\"type\":\"FeatureCollection\",\"features\":[";
+
+
+		Iterator<Integer> iter = grafo.darVertices().keys();
+
+		String aConcatenar = "";
+
+		while(iter.hasNext()){
+
+			aConcatenar += "{\"type\":\"Feature\",\"properties\":{";
+
+			Integer actual = iter.next(); // idVertice
+
+			aConcatenar += "\"idVertex\":" + actual + ",";
+
+			Vertice<Integer, String> act = grafo.darVertice(actual);  // vertice correspondiente a la key actual
+
+
+			Iterator<Arco<Integer, String>> iter2 = act.darAdyacentes();
+
+			String arcos = "";
+			while(iter2.hasNext()){
+
+				Arco<Integer, String> ac = iter2.next();
+
+				double costo = ac.darCosto();
+				Integer idDestino = ac.darDestino().darId();
+				arcos += idDestino + "/" + costo + ";"; // idDestino/costo;			
+
+			}
+
+			if(!arcos.equals("")){
+				arcos = arcos.substring(0, arcos.length() - 1); // se elimina el ultimo caracter de arcos (;)
+			}
+
+			aConcatenar += "\"infoArcos\":" + "\"" + arcos + "\"" +"},";
+
+			aConcatenar+= "\"geometry\":{\"type\":\"Point\",\"coordinates\":[";
+
+			String coordenadas = act.darInfo(); //longitud,latitud
+			coordenadas = coordenadas + ",0"; // se le agrega un ,0 (Referente a Geometry)
+
+			aConcatenar += coordenadas + "]}},"; // cierro el type
+		}
+
+		aConcatenar = aConcatenar.substring(0, aConcatenar.length() - 1); // quito la coma final
+
+		aConcatenar += "]}";
+
+		archivo += aConcatenar; // este string es tremendamente largo
+
+		try {
+
+			Files.write(Paths.get(PATH), archivo.getBytes());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void abrirGrafoJSON(String direccion, GrafoNoDirigido<Integer, String> pGrafo){
+
+		JsonReader reader;
+		try {
+			reader = new JsonReader(new FileReader(direccion));
+			JsonElement elem = JsonParser.parseReader(reader);
+			JsonArray e2 = elem.getAsJsonObject().get("features").getAsJsonArray();
+
+			for(JsonElement e: e2) {
+
+
+				int idVertex = e.getAsJsonObject().get("properties").getAsJsonObject().get("idVertex").getAsInt();
+
+				double longitud = e.getAsJsonObject().get("geometry").getAsJsonObject().get("coordinates").getAsJsonArray()
+						.get(0).getAsDouble();
+
+				double latitud = e.getAsJsonObject().get("geometry").getAsJsonObject().get("coordinates").getAsJsonArray()
+						.get(1).getAsDouble();
+
+				String infoVertex = longitud +"," + latitud;
+
+				pGrafo.agregarVertice((Integer)idVertex, infoVertex);
+
+			}
+
+			for(JsonElement e: e2) {
+
+
+				int idOrigen = e.getAsJsonObject().get("properties").getAsJsonObject().get("idVertex").getAsInt();
+
+				String infoArcos = e.getAsJsonObject().get("properties").getAsJsonObject().get("infoArcos").getAsString();
+
+				String[] informacion = infoArcos.split(";");
+
+				for(int i = 0; i<informacion.length; i++){
+
+					String[] subInfo = informacion[i].split("/");
+					Integer idDestino = Integer.parseInt(subInfo[0]);
+					double costo = Double.parseDouble(subInfo[1]);
+
+					pGrafo.agregarArco((Integer)idOrigen, idDestino, costo);
+
+				}
+
+			}
+
+
+
+		} 
+		catch (FileNotFoundException e) {
+
+			e.printStackTrace();
+
+		}
+
+	}
 }
+

@@ -9,6 +9,7 @@ import com.sun.xml.internal.ws.api.streaming.XMLStreamReaderFactory.Default;
 
 import model.data_structures.ArregloDinamico;
 import model.data_structures.Comparendo;
+import model.data_structures.GrafoNoDirigido;
 import model.data_structures.IArregloDinamico;
 import model.data_structures.ICola;
 import model.data_structures.IPila;
@@ -32,6 +33,11 @@ public class Controller {
 	public static String PATH = "./data/comparendos_dei_2018_small.geojson";
 	public static String PATH2 = "./data/Comparendos_dei_2018_Bogotá_D.C.geojson";
 	public static String PATH3 = "./data/Comparendos_DEI_2018_Bogotá_D.C_50000_.geojson";
+	public static String VERTICES = "./data/vertices.txt";
+	public static String ARCOS = "./data/arcos.txt";
+	public final static String GrafoJSON = "./data/GrafoJSON.geojson";
+
+
 
 
 	/**
@@ -61,11 +67,9 @@ public class Controller {
 					modelo = new Modelo();
 
 					long start = System.currentTimeMillis();
-					modelo.cargar(PATH3);		
+					modelo.cargarGrafo(VERTICES, ARCOS);		
 					long end = System.currentTimeMillis();
 					view.printMessage("Tiempo de carga (s): " + (end-start)/1000.0);
-
-					modelo.requerimiento1Cargar();
 
 					cargado = true;
 
@@ -83,20 +87,20 @@ public class Controller {
 
 			case 2:
 
-				view.printMessage("Ingresa un ObjectID de la siguiente forma(100000): ");
-				int num = lector.nextInt();
-				modelo.requerimiento2(num);
-				System.out.println();
+				modelo.convertirAJSON();
+
 				break;
 
 			case 3:
-				view.printMessage("Ingresa un ObjectID de la siguiente forma(100000): el cual sera el menor valor");
-				int num1 = lector.nextInt();
-				view.printMessage("Ingresa un ObjectID de la siguiente forma(100000): el cual sera el mayor valor");
-				int num2 = lector.nextInt();
-				modelo.requerimiento3(num1, num2);
+
+				GrafoNoDirigido<Integer, String> aCargar = new GrafoNoDirigido<>();
+
+				modelo.abrirGrafoJSON(GrafoJSON, aCargar);
+
+				System.out.println("La cantidad de vértices del grafo es: " + aCargar.V());
+				System.out.println("La cantidad de arcos del grado es: " + aCargar.E());
 				System.out.println();
-				// caso andrés
+
 				break;
 
 			default: 

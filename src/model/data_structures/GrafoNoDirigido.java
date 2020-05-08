@@ -32,7 +32,14 @@ public class GrafoNoDirigido <K extends Comparable<K>, V> {
 	public Vertice<K, V> darVertice(K idVert){
 
 		ArrayList<Vertice<K,V>> vertex = vertices.get(idVert);
-		return vertex.get(0);
+
+		if(vertex == null){
+			return null;
+		}
+
+		else{
+			return vertex.get(0);
+		}
 
 	}
 
@@ -107,7 +114,7 @@ public class GrafoNoDirigido <K extends Comparable<K>, V> {
 
 	}
 
-	void setInfoVertex(K idVertex,V infoVertex){
+	public void setInfoVertex(K idVertex,V infoVertex){
 
 		Vertice<K, V> buscado = vertices.get(idVertex).get(0);
 
@@ -151,13 +158,23 @@ public class GrafoNoDirigido <K extends Comparable<K>, V> {
 
 	public boolean agregarArco(K idOrig, K idDest,double costo){
 
-		Vertice<K, V> origen = vertices.get(idOrig).get(0);
-		Vertice<K, V> destino = vertices.get(idDest).get(0);
 
-		if(origen == null || destino ==null){			
+		if(darArco(idOrig, idDest)!=null){
+
+			return false;
+		}
+
+
+		ArrayList<Vertice<K, V>> origenArray = vertices.get(idOrig);
+		ArrayList<Vertice<K, V>> DestinoArray = vertices.get(idDest);
+
+		if(origenArray == null || DestinoArray ==null){			
 			return false;
 		}		
 		else{
+			Vertice<K, V> origen = vertices.get(idOrig).get(0); 
+			Vertice<K, V> destino = vertices.get(idDest).get(0); 
+
 			Arco<K, V> nuevo = new Arco<>(origen, destino, costo); // se crea el nuevo arco
 			Arco<K, V> nuevo1 = new Arco<>(destino, origen, costo); 
 			origen.agregarArco(nuevo);
@@ -287,6 +304,13 @@ public class GrafoNoDirigido <K extends Comparable<K>, V> {
 		}
 
 		return primo;
+	}
+
+	// retorna los vertices del grafo
+	public LinearProbing<K, Vertice<K, V>> darVertices(){
+
+		vertices.keys();
+		return vertices;
 	}
 
 }
