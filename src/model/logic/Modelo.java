@@ -3,15 +3,18 @@ package model.logic;
 import model.data_structures.Arco;
 import model.data_structures.ArregloDinamico;
 import model.data_structures.Comparendo;
+import model.data_structures.EstacionesPolicia;
 import model.data_structures.GrafoNoDirigido;
 import model.data_structures.IArregloDinamico;
 import model.data_structures.LinearProbing;
+import model.data_structures.Queue;
 import model.data_structures.RedBlackBST;
 import model.data_structures.SeparateChaining;
 import model.data_structures.Vertice;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -24,8 +27,12 @@ import java.util.Random;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
+
+import javafx.scene.shape.Arc;
+import jdk.nashorn.internal.ir.CatchNode;
 /**
  * Definicion del modelo del mundo
  *
@@ -39,12 +46,16 @@ public class Modelo {
 	private CargaVerticesYArcos carga;
 	private GrafoNoDirigido<Integer, String> grafo;
 	public final static String PATH = "./data/GrafoJSON.geojson";
+	public final static String PATH2 = "./data/estacionpolicia.geojson";
+	private Maps mapa;
+	private Queue<EstacionesPolicia> cola;
 
 	/**
 	 * Constructor del modelo del mundo con capacidad predefinida
 	 */
 	public Modelo()
 	{
+		cola = new Queue<>();
 		comps = new RedBlackBST<Integer, Comparendo>();
 		objetoJsonGson = new GeoJSONProcessing();
 		grafo = new GrafoNoDirigido<>();
@@ -353,120 +364,165 @@ public class Modelo {
 
 	}
 
-	// se tiene en cuenta que el grafo ya esta inicializado
+	public void abrirGrafoJSON(String direccion, GrafoNoDirigido<Integer, String> pGrafo){
+
+		JsonReader reader;
+		try {
+			reader = new JsonReader(new FileReader(PATH));
+			JsonElement elem = JsonParser.parseReader(reader);
+			JsonArray e2 = elem.getAsJsonArray();
+
+			for (JsonElement e: e2)
+			{
+				Integer idVertex =(Integer) e.getAsJsonObject().get("IdVertex").getAsInt();
+
+				String infoVertex = e.getAsJsonObject().get("infoVertex").getAsString();
+
+				pGrafo.agregarVertice(idVertex, infoVertex);
+
+			}
+
+			for (JsonElement e: e2)
+			{
+				Integer idVertex =(Integer) e.getAsJsonObject().get("IdVertex").getAsInt();
+				String[] ArcosDestino = e.getAsJsonObject().get("ArcosDestino").getAsString().split("/");
+				String[] CostoArcos = e.getAsJsonObject().get("CostoArcos").getAsString().split("/");
+
+				if(ArcosDestino.length!=0){
+
+					for(int i = 0; i<ArcosDestino.length; i++){
+
+						if(!ArcosDestino[i].equals("") && !CostoArcos[i].equals("")){
+							Integer idDestino = (Integer) Integer.parseInt(ArcosDestino[i]);
+							double costo = Double.parseDouble(CostoArcos[i]);
+
+							pGrafo.agregarArco(idVertex, idDestino, costo);
+						}
+
+					}
+				}
+
+			}
+
+		}
+
+		catch (FileNotFoundException e) {
+
+			e.printStackTrace();
+
+		}
+
+	}
+
 	public void convertirAJSON(){
 
 		if(grafo.V() == 0){
 			return;
 		}
 
-		String archivo = "{\"type\":\"FeatureCollection\",\"features\":[";
-
+		JsonArray features = new JsonArray();
 
 		Iterator<Integer> iter = grafo.darVertices().keys();
 
-		String aConcatenar = "";
+		while(iter!= null && iter.hasNext()){
 
-		while(iter.hasNext()){
+			JsonObject features1 = new JsonObject();
 
-			aConcatenar += "{\"type\":\"Feature\",\"properties\":{";
+			Integer id = iter.next();
 
-			Integer actual = iter.next(); // idVertice
-
-			aConcatenar += "\"idVertex\":" + actual + ",";
-
-			Vertice<Integer, String> act = grafo.darVertice(actual);  // vertice correspondiente a la key actual
+			features1.addProperty("IdVertex", id);;
 
 
-			Iterator<Arco<Integer, String>> iter2 = act.darAdyacentes();
+			String informacion = grafo.darVertice(id).darInfo();
 
-			String arcos = "";
-			while(iter2.hasNext()){
+			features1.addProperty("infoVertex", informacion);
+
+			Iterator<Arco<Integer, String>> iter2 = grafo.darVertice(id).darAdyacentes();
+
+			String arcosDestino = "";
+			String costoArcos = "";
+
+			while(iter2 != null && iter2.hasNext()){
 
 				Arco<Integer, String> ac = iter2.next();
 
 				double costo = ac.darCosto();
 				Integer idDestino = ac.darDestino().darId();
-				arcos += idDestino + "/" + costo + ";"; // idDestino/costo;			
+				arcosDestino += idDestino + "/"	;	// id destino separados por /
+				costoArcos += costo + "/"; // costos arcos separados por /
 
 			}
 
-			if(!arcos.equals("")){
-				arcos = arcos.substring(0, arcos.length() - 1); // se elimina el ultimo caracter de arcos (;)
-			}
+			features1.addProperty("ArcosDestino", arcosDestino);
+			features1.addProperty("CostoArcos", costoArcos);
 
-			aConcatenar += "\"infoArcos\":" + "\"" + arcos + "\"" +"},";
+			features.add(features1);
 
-			aConcatenar+= "\"geometry\":{\"type\":\"Point\",\"coordinates\":[";
-
-			String coordenadas = act.darInfo(); //longitud,latitud
-			coordenadas = coordenadas + ",0"; // se le agrega un ,0 (Referente a Geometry)
-
-			aConcatenar += coordenadas + "]}},"; // cierro el type
 		}
 
-		aConcatenar = aConcatenar.substring(0, aConcatenar.length() - 1); // quito la coma final
+		try{
 
-		aConcatenar += "]}";
+			FileWriter file = new FileWriter(PATH);
 
-		archivo += aConcatenar; // este string es tremendamente largo
+			file.write(features.toString());
+			file.flush();
+			file.close();
+		}
 
-		try {
+		catch(Exception e){
 
-			Files.write(Paths.get(PATH), archivo.getBytes());
-
-		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
 	}
 
-	public void abrirGrafoJSON(String direccion, GrafoNoDirigido<Integer, String> pGrafo){
+	public void mostrarMapa(){
+
+		mapa = new Maps("Grafo Bogot·", grafo, cola);
+		mapa.initFrame();
+
+	}
+
+	public void cargarEstacionesPolicia(){
 
 		JsonReader reader;
 		try {
-			reader = new JsonReader(new FileReader(direccion));
+			reader = new JsonReader(new FileReader(PATH2));
 			JsonElement elem = JsonParser.parseReader(reader);
 			JsonArray e2 = elem.getAsJsonObject().get("features").getAsJsonArray();
 
 			for(JsonElement e: e2) {
+				EstacionesPolicia c = new EstacionesPolicia();
+
+				c.OBJECTID = e.getAsJsonObject().get("properties").getAsJsonObject().get("OBJECTID").getAsInt();
+
+				c.nombre = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPODESCRIP").getAsString();
+
+				c.nombre = c.nombre.replaceAll("Estaci√≥n de Polic√≠a", "EstaciÛn de Policia");
+				c.nombre = c.nombre.replaceAll("Fontib√≥", "FontibÛ"); c.nombre = c.nombre.replaceAll("ari√±o", "NariÒo");
+				c.nombre = c.nombre.replaceAll("Martir√©s", "M·rtires"); c.nombre = c.nombre.replaceAll("Cristob√°l", "Cristobal");
+				c.nombre = c.nombre.replaceAll("Candelar√≠a", "Candelaria"); c.nombre = c.nombre.replaceAll("Bol√≠var", "Bolivar");
+
+				c.EPOLATITUD = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOLATITUD").getAsDouble();
+
+				c.EPOLONGITU = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOLONGITU").getAsDouble();
 
 
-				int idVertex = e.getAsJsonObject().get("properties").getAsJsonObject().get("idVertex").getAsInt();
 
-				double longitud = e.getAsJsonObject().get("geometry").getAsJsonObject().get("coordinates").getAsJsonArray()
-						.get(0).getAsDouble();
-
-				double latitud = e.getAsJsonObject().get("geometry").getAsJsonObject().get("coordinates").getAsJsonArray()
-						.get(1).getAsDouble();
-
-				String infoVertex = longitud +"," + latitud;
-
-				pGrafo.agregarVertice((Integer)idVertex, infoVertex);
-
-			}
-
-			for(JsonElement e: e2) {
-
-
-				int idOrigen = e.getAsJsonObject().get("properties").getAsJsonObject().get("idVertex").getAsInt();
-
-				String infoArcos = e.getAsJsonObject().get("properties").getAsJsonObject().get("infoArcos").getAsString();
-
-				String[] informacion = infoArcos.split(";");
-
-				for(int i = 0; i<informacion.length; i++){
-
-					String[] subInfo = informacion[i].split("/");
-					Integer idDestino = Integer.parseInt(subInfo[0]);
-					double costo = Double.parseDouble(subInfo[1]);
-
-					pGrafo.agregarArco((Integer)idOrigen, idDestino, costo);
-
-				}
+				cola.enqueue(c);
 
 			}
 
+			System.out.println("Se cargaron las " + cola.size() + " estaciones de policia, se muestran sus datos: ");
 
+			Iterator<EstacionesPolicia> iter = cola.iterator();
+
+			while(iter.hasNext()){
+
+				EstacionesPolicia actual = iter.next();
+
+				System.out.println(actual.retornarInformacion());
+			}
 
 		} 
 		catch (FileNotFoundException e) {
@@ -474,6 +530,7 @@ public class Modelo {
 			e.printStackTrace();
 
 		}
+
 
 	}
 }

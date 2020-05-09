@@ -35,6 +35,9 @@ public class Controller {
 	public static String PATH3 = "./data/Comparendos_DEI_2018_Bogotá_D.C_50000_.geojson";
 	public static String VERTICES = "./data/vertices.txt";
 	public static String ARCOS = "./data/arcos.txt";
+	public static String VERTICES2 = "./data/bogota_vertices.txt";
+	public static String ARCOS2 = "./data/bogota_arcos.txt";
+
 	public final static String GrafoJSON = "./data/GrafoJSON.geojson";
 
 
@@ -67,7 +70,7 @@ public class Controller {
 					modelo = new Modelo();
 
 					long start = System.currentTimeMillis();
-					modelo.cargarGrafo(VERTICES, ARCOS);		
+					modelo.cargarGrafo(VERTICES2, ARCOS2);		
 					long end = System.currentTimeMillis();
 					view.printMessage("Tiempo de carga (s): " + (end-start)/1000.0);
 
@@ -101,6 +104,16 @@ public class Controller {
 				System.out.println("La cantidad de arcos del grado es: " + aCargar.E());
 				System.out.println();
 
+				break;
+
+			case 4: 
+
+				modelo.cargarEstacionesPolicia();
+				break;
+
+			case 5:
+
+				modelo.mostrarMapa();
 				break;
 
 			default: 

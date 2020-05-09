@@ -17,6 +17,9 @@ public class View
 		System.out.println("1. Cargar Datos");
 		System.out.println("2. Guardar grafo en archivo JSON");
 		System.out.println("3. Cargar grafo guardado"); 
+		System.out.println("4. Cargar Estaciones de policia");	
+		System.out.println("5. Mostrar Mapa"); 
+
 		System.out.println("Dar el numero de opcion a resolver, luego oprimir tecla Return:");
 
 	}
