@@ -31,10 +31,10 @@ public class Comparendo implements Comparable<Comparendo> {
 	}
 
 
-	public String retornarDatosTaller6(){
+	public String retornarDatosCarga(){
 
-		return "OBJECTID: " + OBJECTID + " FECHA_HORA: " + FECHA_HORA + " TIPO_SERVI: " + TIPO_SERVI
-				+ " CLASE_VEHI: " + CLASE_VEHI + " INFRACCION: " + INFRACCION;		
+		return "OBJECTID: " + OBJECTID + " FECHA_HORA: " + FECHA_HORA + " INFRACCION: " + INFRACCION + " CLASE_VEHI: " + CLASE_VEHI + " TIPO_SERVI: " + TIPO_SERVI
+				+ " LOCALIDAD " + LOCALIDAD;	
 	}
 
 }

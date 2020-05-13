@@ -1,29 +1,17 @@
 package model.logic;
 
 import model.data_structures.Arco;
-import model.data_structures.ArregloDinamico;
 import model.data_structures.Comparendo;
 import model.data_structures.EstacionesPolicia;
 import model.data_structures.GrafoNoDirigido;
-import model.data_structures.IArregloDinamico;
-import model.data_structures.LinearProbing;
+
 import model.data_structures.Queue;
-import model.data_structures.RedBlackBST;
-import model.data_structures.SeparateChaining;
 import model.data_structures.Vertice;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.Random;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -31,8 +19,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
-import javafx.scene.shape.Arc;
-import jdk.nashorn.internal.ir.CatchNode;
 /**
  * Definicion del modelo del mundo
  *
@@ -41,7 +27,7 @@ public class Modelo {
 	/**
 	 * Atributos del modelo del mundo
 	 */
-	private RedBlackBST<Integer, Comparendo> comps;
+	private Queue<Comparendo> comps;
 	private GeoJSONProcessing objetoJsonGson;
 	private CargaVerticesYArcos carga;
 	private GrafoNoDirigido<Integer, String> grafo;
@@ -49,6 +35,7 @@ public class Modelo {
 	public final static String PATH2 = "./data/estacionpolicia.geojson";
 	private Maps mapa;
 	private Queue<EstacionesPolicia> cola;
+	public static final int maximoNumeroDatos = 20;
 
 	/**
 	 * Constructor del modelo del mundo con capacidad predefinida
@@ -56,212 +43,27 @@ public class Modelo {
 	public Modelo()
 	{
 		cola = new Queue<>();
-		comps = new RedBlackBST<Integer, Comparendo>();
+		comps = new Queue<>();
 		objetoJsonGson = new GeoJSONProcessing();
 		grafo = new GrafoNoDirigido<>();
 		carga = new CargaVerticesYArcos();
 	}
 
-	/**
-	 * Servicio de consulta de numero de elementos presentes en el modelo 
-	 * @return numero de elementos presentes en el modelo
-	 */
-	public int darTamano()
-	{
+	//cantidad de comparendos cargados
+	public int darTamano(){
+
 		return comps.size();
 	}
 
+	// solo es permitido leer una vez los archivos
+	public void cargarTodo(String comparendos){
 
-	public void shellSort(Comparable datos[]){
-
-		int tamano = datos.length;
-		int h = 1;
-		while (h < tamano/3){
-
-			h = 3*h + 1; // 1, 4, 13, 40, 121, 364, ...
-
-		}
-		while (h >= 1)
-		{ // h-sort the array.
-			for (int i = h; i < tamano; i++)
-			{
-				for (int j = i; j >= h && less(datos[j], datos[j-h]); j -= h){
-
-					exch(datos, j, j-h);
-				}
-
-			}
-			h = h/3;
-		}
-
-	}
-
-	/* This function takes last element as pivot, 
-    places the pivot element at its correct 
-    position in sorted array, and places all 
-    smaller (smaller than pivot) to left of 
-    pivot and all greater elements to right 
-    of pivot */
-
-	// solucion adaptada de: https://www.geeksforgeeks.org/quick-sort/
-	public static int partition(Comparable datos[], int low, int high) 
-	{ 
-		Comparable pivote = datos[high];  
-		int i = (low-1); // index of smaller element 
-		for (int j=low; j<high; j++) 
-		{ 
-			// Si el elemento actual es menor que el pivote
-			if (less(datos[j], pivote)) 
-			{ 
-				i++; 
-				// swap datos[i] and datos[j]  
-				exch(datos, i, j);
-			} 
-		} 
-
-		// swap datos[i+1] and datos[high] (o pivote) 
-		exch(datos, i+1, high);
-
-		return i+1; 
-	} 
-
-	//relacionado al quicksort, de aqui inicia.
-	public static void sort(Comparable[] a)
-	{
-		StdRandom.shuffle(a);
-		sort(a, 0, a.length - 1);
-	} 
-	/* The main function that implements QuickSort() 
-   datos[] --> Array to be sorted, 
-   low  --> Starting index, 
-   high  --> Ending index */
-
-	// solucion adaptada de: https://www.geeksforgeeks.org/quick-sort/
-	public static void sort(Comparable datos[], int low, int high) 
-	{ 
-		if (low < high) 
-		{ 
-			/* pi is partitioning index, arr[pi] is  
-           now at right place */
-			int pi = partition(datos, low, high); 
-
-			// Recursively sort elements before 
-			// partition and after partition 
-			sort(datos, low, pi-1); 
-			sort(datos, pi+1, high); 
-		} 
-	} 
-
-	public static void exch(Comparable[] a, int i, int j ){
-
-		Comparable temporal = a[i];
-		a[i] = a[j];
-		a[j] = temporal;
-	}
-
-	public static boolean less(Comparable a, Comparable b){
-
-		if(a.compareTo(b)<0){
-			return true;
-		}
-		else{
-			return false; //mayor o igual a cero
-		}
-	}
-	/*
-	 * paso 2 algoritmo mergeSort
-	 */
-	private static void sortParaMergeSort(Comparable[] a, Comparable[] aux, int lo, int hi, String orden, Comparator<Comparendo> comparador)
-	{
-		if (hi <= lo) return;
-		int mid = lo + (hi - lo) / 2;
-		sortParaMergeSort(a, aux, lo, mid, orden, comparador);
-		sortParaMergeSort(a, aux, mid+1, hi, orden, comparador);
-		merge(a, aux, lo, mid, hi, orden, comparador);
-	}
-
-	/*
-	 *  aqui inicia el algoritmo mergeSort sacado del libro algorithms 4 edicion
-	 */
-	public static void sortParaMerge(Comparable[] a, String orden, Comparator<Comparendo> comparador)
-	{
-		Comparable[] aux = new Comparable[a.length];
-		sortParaMergeSort(a, aux, 0, a.length - 1, orden, comparador);
-	}
+		cargar(comparendos); 		// comparendos 2018
+		objetoJsonGson.retornarRequerimientoCargar();
+		cargarEstacionesPolicia();	// archivo estaciones policia
+		abrirGrafoJSON(this.grafo); // abre (carga) grafo json creado 
 
 
-
-	/*
-	 * ultimo paso
-	 */
-	private static void merge(Comparable[] a, Comparable[] aux, int lo, int mid, int hi, String orden, Comparator<Comparendo> comparador )
-	{
-		for (int k = lo; k <= hi; k++)
-			aux[k] = a[k];
-		int i = lo, j = mid+1;
-		for (int k = lo; k <= hi; k++)
-		{
-			if(comparador==null){
-
-				if(orden.equalsIgnoreCase("descendente")){
-					if (i > mid) a[k] = aux[j++];
-					else if (j > hi) a[k] = aux[i++];
-					else if (less(aux[j], aux[i])) //si izquierda menor true
-					{ a[k] = aux[j++];}
-					else a[k] = aux[i++];
-				}
-
-				if(orden.equalsIgnoreCase("ascendente")){
-					if (i > mid) a[k] = aux[j++];
-					else if (j > hi) a[k] = aux[i++];
-					else if (!less(aux[j], aux[i])) //si izquierda no es menor true
-					{ a[k] = aux[j++];}
-					else a[k] = aux[i++];
-				}
-			}
-
-			else{
-
-				if(orden.equalsIgnoreCase("descendente")){
-					if (i > mid) a[k] = aux[j++];
-					else if (j > hi) a[k] = aux[i++];
-					else if (comparador.compare(cambiarDeComparableAComparendo(aux[j]) , cambiarDeComparableAComparendo(aux[i]) )<0) //si izquierda menor true
-					{ a[k] = aux[j++];}
-					else a[k] = aux[i++];
-				}
-
-				if(orden.equalsIgnoreCase("ascendente")){
-					if (i > mid) a[k] = aux[j++];
-					else if (j > hi) a[k] = aux[i++];
-					else if (comparador.compare(cambiarDeComparableAComparendo(aux[j]) , cambiarDeComparableAComparendo(aux[i]) )>=0) //si izquierda no es menor true
-					{ a[k] = aux[j++];}
-					else a[k] = aux[i++];
-				}
-
-			}
-
-		}
-	}
-	/**
-	 * Requerimiento buscar dato
-	 * @param dato Dato a buscar
-	 * @return dato encontrado
-	 */
-	public Comparendo get(int dato)
-	{
-		Comparendo rta = comps.get(dato);
-
-		return rta;
-	}
-
-	/**
-	 * Requerimiento eliminar dato
-	 * @param dato Dato a eliminar
-	 * @return dato eliminado
-	 */
-	public String eliminar(String dato)
-	{
-		return null;
 	}
 
 
@@ -285,7 +87,7 @@ public class Modelo {
 		return rta;
 	}
 
-	public RedBlackBST<Integer, Comparendo> darRedBlackBST(){
+	public Queue<Comparendo> darColaComparendos(){
 
 		return comps;
 	}
@@ -295,82 +97,18 @@ public class Modelo {
 		return objetoJsonGson;
 	}
 
-
-	public static Comparendo cambiarDeComparableAComparendo(Comparable a){
-
-		Comparendo rta = (Comparendo) a;
-		return rta;
-	}
-
-	public Comparable[] copiarArreglo(IArregloDinamico<Comparendo> pComps){
-
-		Comparable[] rta = new Comparable[pComps.darTamano()];
-		int i = 0;
-		while(i < pComps.darTamano()){
-			rta[i] = pComps.darElemento(i);
-			i++;
-		}
-
-		return rta;
-
-	}
-
-	public IArregloDinamico<Comparendo> retornarArregloDeComparendos(Comparable[] a){
-
-		IArregloDinamico<Comparendo> rta = new ArregloDinamico<>(100);
-
-		for(int i =0; i<a.length; i++){
-
-			Comparable actual = a[i];
-			Comparendo aAgregar = cambiarDeComparableAComparendo(actual);
-			rta.agregar(aAgregar);
-		}
-
-		return rta;
-
-	}
-
-
-	public void requerimiento1Cargar(){
-
-		objetoJsonGson.retornarRequerimientoCargar();
-		int max= comps.getHeight(comps.max());
-		int min= comps.getHeight(comps.min());
-		System.out.println(comps.heightLeft()+"a");
-		System.out.println(comps.heightRight()+"a");
-	}
-
-	public void requerimiento2(int objectID){
-
-		Comparendo rta = comps.get(objectID);
-
-		if(rta != null) System.out.println("Comparendo encontrado, sus datos son: " + rta.retornarDatosTaller6());
-		else System.out.println("No existe un comparendo con ese ObjectID");
-
-	}
-	public void requerimiento3(int objectID_Inferior, int objectID_Superior){
-		Comparendo rta = comps.get(objectID_Inferior);
-
-		Comparendo rta2 = comps.get(objectID_Superior);
-		Iterator<Comparendo> a= comps.valuesInRange(objectID_Inferior, objectID_Superior);
-		if(rta!= null &&rta2!=null){
-			while(a.hasNext())
-			{
-				System.out.println(a.next().retornarDatos());
-
-			};
-		}else
-			System.out.println("No existe un comparendo con alguno de esos ObjectIDS");
-
-	}
-
-	public void abrirGrafoJSON(String direccion, GrafoNoDirigido<Integer, String> pGrafo){
+	public void abrirGrafoJSON(GrafoNoDirigido<Integer, String> pGrafo){
 
 		JsonReader reader;
 		try {
 			reader = new JsonReader(new FileReader(PATH));
 			JsonElement elem = JsonParser.parseReader(reader);
 			JsonArray e2 = elem.getAsJsonArray();
+
+			Vertice<Integer, String> mayor = null;
+			Integer idMayor = -1;
+			double latitud = 0;
+			double longitud = 0;
 
 			for (JsonElement e: e2)
 			{
@@ -379,6 +117,17 @@ public class Modelo {
 				String infoVertex = e.getAsJsonObject().get("infoVertex").getAsString();
 
 				pGrafo.agregarVertice(idVertex, infoVertex);
+
+				if(idVertex > idMayor){
+
+					mayor = pGrafo.darVertice(idVertex);
+					idMayor = idVertex;
+					String info = mayor.darInfo(); 			// longitud,latitud
+					String[] informacion = info.split(",");
+					longitud = Double.parseDouble(informacion[0]);
+					latitud = Double.parseDouble(informacion[1]);
+
+				}
 
 			}
 
@@ -403,6 +152,32 @@ public class Modelo {
 				}
 
 			}
+
+			System.out.println("El total de vertices que hay en la malla vial de Bogota es: " + pGrafo.V());
+			System.out.println("El vertice con el mayor ID encontrado es:\n-" + "ID: " + mayor.darId() +
+					" Latitud: " + latitud + " Longitud: " + longitud);
+			System.out.println("El total de arcos de la maya vial de Bogota es: " + pGrafo.E());
+			System.out.println("La informacion de los arcos del vertice con mayor ID encontrado es:");
+
+			Iterator<Arco<Integer, String>> iter = mayor.darAdyacentes();
+
+			if(mayor.adjs().size()>20){
+				System.out.println("Se muestran los primeros 20:");
+			}
+
+			int conteo = 0;
+			while(iter!= null && iter.hasNext() && conteo < maximoNumeroDatos){
+
+				Arco<Integer, String> actual = iter.next();
+				Integer idOrigen = actual.darOrigen().darId();
+				Integer idDestino = actual.darDestino().darId();
+				conteo++;
+
+				System.out.println("-ID Origen: " + idOrigen + " ID Destino: " + idDestino);
+			}
+
+			System.out.println();
+
 
 		}
 
@@ -491,38 +266,50 @@ public class Modelo {
 			JsonElement elem = JsonParser.parseReader(reader);
 			JsonArray e2 = elem.getAsJsonObject().get("features").getAsJsonArray();
 
+
+			EstacionesPolicia mayor = null;
+			int mayorObjectID = -1;
+
 			for(JsonElement e: e2) {
 				EstacionesPolicia c = new EstacionesPolicia();
 
 				c.OBJECTID = e.getAsJsonObject().get("properties").getAsJsonObject().get("OBJECTID").getAsInt();
 
-				c.nombre = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPODESCRIP").getAsString();
+				if(c.OBJECTID > mayorObjectID){
+					mayorObjectID = c.OBJECTID;
+					mayor = c;
 
-				c.nombre = c.nombre.replaceAll("Estación de Policía", "Estaci�n de Policia");
-				c.nombre = c.nombre.replaceAll("Fontibó", "Fontib�"); c.nombre = c.nombre.replaceAll("ariño", "Nari�o");
-				c.nombre = c.nombre.replaceAll("Martirés", "M�rtires"); c.nombre = c.nombre.replaceAll("Cristobál", "Cristobal");
-				c.nombre = c.nombre.replaceAll("Candelaría", "Candelaria"); c.nombre = c.nombre.replaceAll("Bolívar", "Bolivar");
+				}
+
+				c.EPODESCRIP = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPODESCRIP").getAsString();
+
+				c.EPODESCRIP = c.EPODESCRIP.replaceAll("Estación de Policía", "Estaci�n de Policia");
+				c.EPODESCRIP = c.EPODESCRIP.replaceAll("Fontibó", "Fontib�"); c.EPODESCRIP = c.EPODESCRIP.replaceAll("ariño", "Nari�o");
+				c.EPODESCRIP = c.EPODESCRIP.replaceAll("Martirés", "M�rtires"); c.EPODESCRIP = c.EPODESCRIP.replaceAll("Cristobál", "Cristobal");
+				c.EPODESCRIP = c.EPODESCRIP.replaceAll("Candelaría", "Candelaria"); c.EPODESCRIP = c.EPODESCRIP.replaceAll("Bolívar", "Bolivar");
+
+				c.EPODIR_SITIO = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPODIR_SITIO").getAsString();
 
 				c.EPOLATITUD = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOLATITUD").getAsDouble();
 
 				c.EPOLONGITU = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOLONGITU").getAsDouble();
 
+				c.EPOSERVICIO = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOSERVICIO").getAsString();
 
+				c.EPOHORARIO = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOHORARIO").getAsString();
+
+				c.EPOTELEFON = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOTELEFON").getAsString();
+
+				c.EPOIULOCAL = e.getAsJsonObject().get("properties").getAsJsonObject().get("EPOIULOCAL").getAsString();
 
 				cola.enqueue(c);
 
 			}
 
-			System.out.println("Se cargaron las " + cola.size() + " estaciones de policia, se muestran sus datos: ");
+			System.out.println("El total de estaciones de policia es: " + cola.size());
 
-			Iterator<EstacionesPolicia> iter = cola.iterator();
+			System.out.println("La estacion de policia con el mayor ObjectID encontrado es:" + "\n-" + mayor.retornarInformacionCargar() + "\n");
 
-			while(iter.hasNext()){
-
-				EstacionesPolicia actual = iter.next();
-
-				System.out.println(actual.retornarInformacion());
-			}
 
 		} 
 		catch (FileNotFoundException e) {

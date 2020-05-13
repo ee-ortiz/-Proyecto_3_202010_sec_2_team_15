@@ -145,5 +145,9 @@ public class Vertice <K extends Comparable<K>, V >{
 		return color;
 	}
 
+	public Bag<Arco<K,V>> adjs(){
+
+		return adyacentes;
+	}
 
 }

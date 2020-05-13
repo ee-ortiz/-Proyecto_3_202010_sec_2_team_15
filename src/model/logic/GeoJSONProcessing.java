@@ -1,41 +1,30 @@
- package model.logic;
+package model.logic;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.List;
+
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
-import model.data_structures.Cola;
 import model.data_structures.Comparendo;
-import model.data_structures.IArregloDinamico;
-import model.data_structures.ICola;
-import model.data_structures.IPila;
-import model.data_structures.LinearProbing;
-import model.data_structures.Pila;
-import model.data_structures.RedBlackBST;
-import model.data_structures.SeparateChaining;
+import model.data_structures.Queue;
+
 
 
 
 public class GeoJSONProcessing {
 
-	private int valorMinimoObjectID;
-	private int valorMaximoObjectID;
 	private int tamano;
+	private Comparendo mayor;
 
 	// Solucion de carga de datos publicada al curso Estructuras de Datos 2020-10
-	public void cargarDatos(RedBlackBST<Integer, Comparendo> comps, String direccion){
+	public void cargarDatos(Queue<Comparendo> comps, String direccion){
 
 		JsonReader reader;
 		try {
@@ -45,10 +34,19 @@ public class GeoJSONProcessing {
 
 			SimpleDateFormat parser=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
+			Comparendo mayor = null;
+			int mayorObjectID = -1;
 
-			for(JsonElement e: e2) {
+			for(JsonElement e: e2) {	
+
 				Comparendo c = new Comparendo();
 				c.OBJECTID = e.getAsJsonObject().get("properties").getAsJsonObject().get("OBJECTID").getAsInt();
+
+				if(c.OBJECTID > mayorObjectID){
+					mayorObjectID = c.OBJECTID;
+					mayor = c;
+
+				}
 
 				String s = e.getAsJsonObject().get("properties").getAsJsonObject().get("FECHA_HORA").getAsString();	
 				c.FECHA_HORA = parser.parse(s);
@@ -82,16 +80,13 @@ public class GeoJSONProcessing {
 						.get(1).getAsDouble();
 
 
-				comps.put(c.OBJECTID, c);
-
+				comps.enqueue(c);
 
 			}
 
-			valorMaximoObjectID = comps.max();
-			valorMinimoObjectID = comps.min();
+			this.mayor = mayor;
 			tamano = comps.size();
-
-
+			
 		} 
 		catch (FileNotFoundException | ParseException e) {
 
@@ -110,8 +105,7 @@ public class GeoJSONProcessing {
 	public void retornarRequerimientoCargar(){
 
 		System.out.println("El total de comparendos leidos es: " + tamano);
-		System.out.println("El valor mínimo de ObjectID leido es: " + valorMinimoObjectID);
-		System.out.println("El valor máximo de ObjectID leido es: " + valorMaximoObjectID);
+		System.out.println("El comparendo con el mayor objectID encontrado es: " + "\n-" + mayor.retornarDatosCarga() + "\n");
 
 	}
 

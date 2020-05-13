@@ -32,7 +32,7 @@ public class Controller {
 	private boolean cargado;
 	public static String PATH = "./data/comparendos_dei_2018_small.geojson";
 	public static String PATH2 = "./data/Comparendos_dei_2018_Bogotá_D.C.geojson";
-	public static String PATH3 = "./data/Comparendos_DEI_2018_Bogotá_D.C_50000_.geojson";
+	public static String PATH3 = "./data/Comparendos_DEI_2018_Bogotá_D.C_50000.geojson";
 	public static String VERTICES = "./data/vertices.txt";
 	public static String ARCOS = "./data/arcos.txt";
 	public static String VERTICES2 = "./data/bogota_vertices.txt";
@@ -70,7 +70,7 @@ public class Controller {
 					modelo = new Modelo();
 
 					long start = System.currentTimeMillis();
-					modelo.cargarGrafo(VERTICES2, ARCOS2);		
+					modelo.cargarTodo(PATH3);		
 					long end = System.currentTimeMillis();
 					view.printMessage("Tiempo de carga (s): " + (end-start)/1000.0);
 
@@ -90,30 +90,19 @@ public class Controller {
 
 			case 2:
 
-				modelo.convertirAJSON();
-
 				break;
 
 			case 3:
 
-				GrafoNoDirigido<Integer, String> aCargar = new GrafoNoDirigido<>();
-
-				modelo.abrirGrafoJSON(GrafoJSON, aCargar);
-
-				System.out.println("La cantidad de vértices del grafo es: " + aCargar.V());
-				System.out.println("La cantidad de arcos del grado es: " + aCargar.E());
-				System.out.println();
 
 				break;
 
 			case 4: 
 
-				modelo.cargarEstacionesPolicia();
 				break;
 
 			case 5:
 
-				modelo.mostrarMapa();
 				break;
 
 			default: 
