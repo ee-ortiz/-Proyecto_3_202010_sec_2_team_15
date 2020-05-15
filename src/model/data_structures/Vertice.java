@@ -10,10 +10,14 @@ public class Vertice <K extends Comparable<K>, V >{
 	private int color;
 	private Arco<K,V> arcoLlegada;
 	private Bag<Arco<K,V>> adyacentes;
+	private Bag<EstacionesPolicia> masCercanas;
+	private Bag<Comparendo> comparendos;
 
 	public Vertice( K id, V info ){
 
 		adyacentes = new Bag<>();
+		masCercanas = new Bag<>();
+		comparendos = new Bag<>();
 		idVtce = id;
 		infoVtce = info;
 		marca = false;
@@ -149,5 +153,18 @@ public class Vertice <K extends Comparable<K>, V >{
 
 		return adyacentes;
 	}
+
+	public Bag<EstacionesPolicia> darMasCercanas(){
+
+		return masCercanas;
+	}
+
+	public Bag<Comparendo> darComparendos(){
+
+		return comparendos;
+	}
+
+
+
 
 }

@@ -36,5 +36,6 @@ public class Comparendo implements Comparable<Comparendo> {
 		return "OBJECTID: " + OBJECTID + " FECHA_HORA: " + FECHA_HORA + " INFRACCION: " + INFRACCION + " CLASE_VEHI: " + CLASE_VEHI + " TIPO_SERVI: " + TIPO_SERVI
 				+ " LOCALIDAD " + LOCALIDAD;	
 	}
+	
 
 }

@@ -90,19 +90,51 @@ public class Controller {
 
 			case 2:
 
+				view.printMessage("Inserte latitud: ");
+				double lat = lector.nextDouble();
+				view.printMessage("Inserte longitud");
+				double lon = lector.nextDouble();
+
+				int rta = modelo.requerimientoParteInicial1(lat, lon);
+
+				if(rta ==-1){
+					view.printMessage("No hay vertices en el grafo");
+				}
+
+				else{
+					view.printMessage("El id del vectice mas cercano a las coordenadas dadas es: " + rta);
+				}
+
 				break;
 
 			case 3:
 
 
+				modelo.requerimientoParteInicial2();
+
 				break;
 
 			case 4: 
+
+				modelo.requerimientosParteInicial3();
 
 				break;
 
 			case 5:
 
+				modelo.requerimientosParteInicial4();
+				modelo.prueba();
+
+				break;
+
+			case 6:
+
+				modelo.guardarGrafoCompleto();
+				break;
+
+			case 7:
+
+				modelo.cargarGrafoCompleto();
 				break;
 
 			default: 

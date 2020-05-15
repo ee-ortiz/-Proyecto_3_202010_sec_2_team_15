@@ -11,6 +11,7 @@ public class EstacionesPolicia {
 	public String EPOHORARIO;
 	public String EPOTELEFON;
 	public String EPOIULOCAL;
+	public double distanciaAlVertice;
 
 
 

@@ -309,7 +309,6 @@ public class GrafoNoDirigido <K extends Comparable<K>, V> {
 	// retorna los vertices del grafo
 	public LinearProbing<K, Vertice<K, V>> darVertices(){
 
-		vertices.keys();
 		return vertices;
 	}
 
