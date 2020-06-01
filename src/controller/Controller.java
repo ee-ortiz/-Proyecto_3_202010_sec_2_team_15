@@ -150,13 +150,18 @@ public class Controller {
 
 				modelo.requerimiento1A(lat1, lon1, lat2, lon2);
 
-
-
 				break;
 
 			case 9:
 
-				modelo.requerimiento2A(20);
+				System.out.println("Ingrese un numero M:");
+				int num = lector.nextInt();
+		
+				long start1 = System.currentTimeMillis();
+				modelo.requerimiento2A(num);		
+				long end1 = System.currentTimeMillis();
+				view.printMessage("Tiempo de carga (s): " + (end1-start1)/1000.0);
+				
 
 				break;
 

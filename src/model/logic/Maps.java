@@ -42,7 +42,7 @@ public class Maps extends MapView {
 
 	private GrafoNoDirigido<Integer, String> GrafoMapa;
 
-	private Queue<EstacionesPolicia> cola;
+	private Queue<Arco<Integer, String>> R2A;
 
 	private Pila<Vertice<Integer, String>> pila;
 
@@ -52,12 +52,14 @@ public class Maps extends MapView {
 	 * Visualizacion Google map con camino, marcas, circulos y texto de localizacion
 	 * @param idReq
 	 */
-	public Maps(String idReq, Queue<Vertice<Integer, String>> R1A)
+	public Maps(String idReq, Queue<Vertice<Integer, String>> R1A, Queue<Arco<Integer, String>> R2A)
 	{	
 
 		GrafoMapa = new GrafoNoDirigido<>();
 		idRequerimiento = idReq;
 		req1A = R1A;
+		this.R2A = R2A;
+
 
 	}
 
@@ -190,11 +192,11 @@ public class Maps extends MapView {
 						startLoc.setRadius(13); //Radio del circulo
 
 					}
-					
+
 					while(!req1A.isEmpty()){
-						
+
 						Vertice<Integer, String> act = req1A.dequeue();
-						
+
 						String info = act.darInfo(); 
 
 						String[] informacion = info.split(",");
@@ -202,11 +204,11 @@ public class Maps extends MapView {
 						double longitud = Double.parseDouble(informacion[0]);
 
 						LatLng nuevo = new LatLng(latitud,longitud);
-						
+
 						if(!req1A.isEmpty()){
-							
+
 							Vertice<Integer, String> sig = req1A.peek();
-							
+
 							String info2 = sig.darInfo(); 
 
 							String[] informacion2 = info2.split(",");
@@ -214,7 +216,7 @@ public class Maps extends MapView {
 							double longitud2 = Double.parseDouble(informacion2[0]);
 
 							LatLng nuevo2 = new LatLng(latitud2,longitud2);		
-							
+
 							LatLng[] arco = new LatLng[2];
 
 							arco[0] = nuevo;
@@ -223,12 +225,12 @@ public class Maps extends MapView {
 							Polyline path = new Polyline(map); 														
 							path.setOptions(pathOpt); 
 							path.setPath(arco);
-							
+
 						}
-						
-						
-						
-						
+
+
+
+
 					}
 
 					initMap( map );
@@ -275,6 +277,93 @@ public class Maps extends MapView {
 		}
 
 		System.out.println(conteo);
+
+	}
+
+	public void visuaLizarGrafo2A() {
+
+		setOnMapReadyHandler( new MapReadyHandler() {
+			@Override
+			public void onMapReady(MapStatus status)
+			{
+
+				if ( status == MapStatus.MAP_STATUS_OK )
+				{
+					map = getMap();
+
+
+
+					//Configuracion circulos
+					CircleOptions vertexLocOpt= new CircleOptions(); 
+					vertexLocOpt.setFillColor("#00FF00");  // color de relleno
+					vertexLocOpt.setFillOpacity(0.5);
+					vertexLocOpt.setStrokeWeight(1.0);
+
+					//Configuracion de la linea del camino
+					PolylineOptions pathOpt = new PolylineOptions();
+					pathOpt.setStrokeColor("#0000FF");	  // color de linea	
+					pathOpt.setStrokeOpacity(1.75);
+					pathOpt.setStrokeWeight(1.5);
+					pathOpt.setGeodesic(false);
+
+					Iterator<Arco<Integer, String>> iter = R2A.iterator();
+
+
+					while(iter!= null && iter.hasNext()){
+
+						Arco<Integer, String> act = iter.next();
+
+						Vertice<Integer, String> origen = act.darOrigen();
+						Vertice<Integer, String> destino = act.darDestino();
+
+
+						String info1 = origen.darInfo(); 
+
+						String[] informacion1 = info1.split(",");
+						double latitud1 = Double.parseDouble(informacion1[1]);
+						double longitud1 = Double.parseDouble(informacion1[0]);
+
+						LatLng nuevo1 = new LatLng(latitud1,longitud1);
+
+						Circle startLoc1 = new Circle(map);
+						startLoc1.setOptions(vertexLocOpt);
+						startLoc1.setCenter(nuevo1); 
+						startLoc1.setRadius(13); //Radio del circulo
+						
+						
+						String info2 = destino.darInfo();
+						
+						String[] informacion2 = info2.split(",");
+						double latitud2 = Double.parseDouble(informacion2[1]);
+						double longitud2 = Double.parseDouble(informacion2[0]);
+
+						LatLng nuevo2 = new LatLng(latitud2,longitud2);
+
+						Circle startLoc2 = new Circle(map);
+						startLoc2.setOptions(vertexLocOpt);
+						startLoc2.setCenter(nuevo2); 
+						startLoc2.setRadius(13); //Radio del circulo
+						
+						LatLng[] arco = new LatLng[2];
+
+						arco[0] = nuevo1;
+						arco[1] = nuevo2;
+
+						Polyline path = new Polyline(map); 														
+						path.setOptions(pathOpt); 
+						path.setPath(arco);
+
+					}
+
+					}
+
+					initMap( map );
+				}
+			
+
+		} );
+
+
 
 	}
 

@@ -814,7 +814,7 @@ public class Modelo {
 			System.out.println();
 			System.out.println("Distancia estimada : " + costoAcumulado);
 
-			mapa = new Maps("Requerimiento 1A", camino);
+			mapa = new Maps("Requerimiento 1A", camino, null);
 			mapa.visuaLizarGrafo1A();
 			mapa.initFrame();
 
@@ -888,7 +888,7 @@ public class Modelo {
 		Iterator<Comparendo> iter3 = gravedad.iterator(comparar);
 
 		int conteo = 0;
-		while(iter3!=null && iter3.hasNext() && conteo<M){
+		while(iter3!=null && conteo<M &&  iter3.hasNext()){
 
 
 			Comparendo actual = iter3.next();
@@ -898,13 +898,7 @@ public class Modelo {
 
 			Integer id = requerimientoParteInicial1(lat, lon);
 
-			Vertice<Integer, String> vertex = grafo.darVertice(id);
-
-			if(!vertex.darMarca()){
-
-				grafo.MST(id);
-
-			}
+			grafo.MST(id);
 
 			conteo++;
 
@@ -919,8 +913,8 @@ public class Modelo {
 
 		Iterator<Comparendo> iter4 = gravedad.iterator(comparar); 
 
-		int conteo2 = 0;
-		while(iter4!= null && iter4.hasNext() && conteo2<M){
+		conteo = 0;
+		while(iter4!= null && conteo <M && iter4.hasNext()){
 
 			Comparendo actual = iter4.next();
 
@@ -946,7 +940,7 @@ public class Modelo {
 
 			}
 
-			conteo2++;
+			conteo++;
 
 			// en este punto ya tengo una cola con todos los arcos de el arbol de costo minimo del los comparendos mas graves, lo muestro en consola
 
@@ -970,11 +964,13 @@ public class Modelo {
 
 		}
 
-		System.out.println("\nCostoTotal: " + costoTotal);
+		System.out.println("\nCostoTotal: U$" + costoTotal*10000);
 
-		/*el total de vértices en el componente, los vértices (identificadores), los arcos
-		incluidos (Id vértice inicial e Id vértice final) y el costo (monetario) total.*/
+		// ahora mostrar el mapa
 
+		mapa = new Maps("Requerimiento 1A", null, req2A);
+		mapa.visuaLizarGrafo2A();
+		mapa.initFrame();
 
 		grafo.limpiar();
 

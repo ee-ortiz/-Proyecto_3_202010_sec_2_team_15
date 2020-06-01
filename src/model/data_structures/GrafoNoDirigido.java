@@ -396,50 +396,53 @@ public class GrafoNoDirigido <K extends Comparable<K>, V> {
 	// algoritmo para MST
 	public void MST(K idInicial){
 
-		Vertice<K, V> inicial = this.darVertice(idInicial);
+		if(!darVertice(idInicial).darMarca()){
 
-		inicial.marcar(1, null);  // el arco llegada del vertice inicial es null
+			Vertice<K, V> inicial = this.darVertice(idInicial);
 
-		MaxHeapCP<Arco<K, V>> frenteExploracion = new MaxHeapCP<>(); // PQ orientada a costo de arcos
+			inicial.marcar(1, null);  // el arco llegada del vertice inicial es null
 
-		Iterator<Arco<K, V>> iter = inicial.darAdyacentes();
+			MaxHeapCP<Arco<K, V>> frenteExploracion = new MaxHeapCP<>(); // PQ orientada a costo de arcos
 
-		while(iter!= null && iter.hasNext()){
+			Iterator<Arco<K, V>> iter = inicial.darAdyacentes();
 
-			Arco<K, V> actual = iter.next();
-			Vertice<K, V> act = actual.darDestino();
-			act.cambiarArcoLlegada(actual);
-			frenteExploracion.insert(actual, null);
-		}
+			while(iter!= null && iter.hasNext()){
 
-		while(!frenteExploracion.isEmpty()){
+				Arco<K, V> actual = iter.next();
+				Vertice<K, V> act = actual.darDestino();
+				act.cambiarArcoLlegada(actual);
+				frenteExploracion.insert(actual, null);
+			}
 
-			Arco<K, V> sacado = frenteExploracion.delMax(null);
+			while(!frenteExploracion.isEmpty()){
 
-			if(!sacado.darDestino().darMarca()){
+				Arco<K, V> sacado = frenteExploracion.delMax(null);
 
-				sacado.darDestino().marcar(1, sacado);
+				if(!sacado.darDestino().darMarca()){
 
-				Iterator<Arco<K, V>> iter2 = sacado.darDestino().darAdyacentes();
+					sacado.darDestino().marcar(1, sacado);
 
-				while(iter2!=null && iter2.hasNext()){
+					Iterator<Arco<K, V>> iter2 = sacado.darDestino().darAdyacentes();
 
-					Arco<K, V> adj = iter2.next();
+					while(iter2!=null && iter2.hasNext()){
 
-					Vertice<K, V> dest = adj.darDestino();
+						Arco<K, V> adj = iter2.next();
 
-					if(!dest.darMarca()){
+						Vertice<K, V> dest = adj.darDestino();
 
-						dest.cambiarArcoLlegada(adj);
-						frenteExploracion.insert(adj, null);
+						if(!dest.darMarca()){
+
+							dest.cambiarArcoLlegada(adj);
+							frenteExploracion.insert(adj, null);
+
+						}
 
 					}
-
 				}
 			}
+
+
 		}
-		
-		
 
 	}
 
