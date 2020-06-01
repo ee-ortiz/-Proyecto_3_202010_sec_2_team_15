@@ -6,6 +6,7 @@ import java.util.Iterator;
 import javax.swing.JFrame;
 
 import model.data_structures.LinearProbing;
+import model.data_structures.Pila;
 import model.data_structures.Queue;
 import model.data_structures.Vertice;
 import model.data_structures.GrafoNoDirigido;
@@ -43,18 +44,20 @@ public class Maps extends MapView {
 
 	private Queue<EstacionesPolicia> cola;
 
+	private Pila<Vertice<Integer, String>> pila;
+
+	private Queue<Vertice<Integer, String>> req1A;
+
 	/**
 	 * Visualizacion Google map con camino, marcas, circulos y texto de localizacion
 	 * @param idReq
 	 */
-	public Maps(String idReq, GrafoNoDirigido<Integer, String> pGrafo, Queue<EstacionesPolicia> pCola)
+	public Maps(String idReq, Queue<Vertice<Integer, String>> R1A)
 	{	
-		cola = pCola;
+
 		GrafoMapa = new GrafoNoDirigido<>();
 		idRequerimiento = idReq;
-		cargarGrafoMapa(pGrafo);
-		visuaLizarGrafo();
-
+		req1A = R1A;
 
 	}
 
@@ -72,6 +75,7 @@ public class Maps extends MapView {
 		LatLngBounds limits = new LatLngBounds(limites[0], limites[1]);
 
 		map.fitBounds(limits);
+
 	}
 
 	public void initFrame()
@@ -138,7 +142,7 @@ public class Maps extends MapView {
 
 	}
 
-	public void visuaLizarGrafo(){
+	public void visuaLizarGrafo1A(){
 
 		setOnMapReadyHandler( new MapReadyHandler() {
 			@Override
@@ -149,7 +153,7 @@ public class Maps extends MapView {
 				{
 					map = getMap();
 
-					Iterator<Integer> idVertex = GrafoMapa.darVertices().keys();
+
 
 					//Configuracion circulos
 					CircleOptions vertexLocOpt= new CircleOptions(); 
@@ -164,12 +168,15 @@ public class Maps extends MapView {
 					pathOpt.setStrokeWeight(1.5);
 					pathOpt.setGeodesic(false);
 
-					agregarEstaciones(cola);
 
-					while(idVertex!=null && idVertex.hasNext()){
+					Iterator<Vertice<Integer, String>> iter = req1A.iterator();
 
-						Integer actual = idVertex.next();
-						String info = GrafoMapa.getInfoVertex(actual); // longitud,latitud
+
+					while(iter!= null && iter.hasNext()){
+
+						Vertice<Integer, String> act = iter.next();
+
+						String info = act.darInfo(); 
 
 						String[] informacion = info.split(",");
 						double latitud = Double.parseDouble(informacion[1]);
@@ -180,57 +187,55 @@ public class Maps extends MapView {
 						Circle startLoc = new Circle(map);
 						startLoc.setOptions(vertexLocOpt);
 						startLoc.setCenter(nuevo); 
-						startLoc.setRadius(2); //Radio del circulo
+						startLoc.setRadius(13); //Radio del circulo
 
 					}
+					
+					while(!req1A.isEmpty()){
+						
+						Vertice<Integer, String> act = req1A.dequeue();
+						
+						String info = act.darInfo(); 
 
-					Iterator<Integer> idVertex2 = GrafoMapa.darVertices().keys();
+						String[] informacion = info.split(",");
+						double latitud = Double.parseDouble(informacion[1]);
+						double longitud = Double.parseDouble(informacion[0]);
 
-					while(idVertex2!=null && idVertex2.hasNext()){
+						LatLng nuevo = new LatLng(latitud,longitud);
+						
+						if(!req1A.isEmpty()){
+							
+							Vertice<Integer, String> sig = req1A.peek();
+							
+							String info2 = sig.darInfo(); 
 
-						Integer actual = idVertex2.next();
-
-						Iterator<Arco<Integer, String>> arcos = GrafoMapa.darVertice(actual).darAdyacentes();
-
-						while(arcos!=null && arcos.hasNext()){
-
-							Arco<Integer, String> act = arcos.next();
-
-							String infoOrigen = act.darOrigen().darInfo();
-							String infoDestino = act.darDestino().darInfo();
-
-							String[] informacion1 = infoOrigen.split(",");
-							double longitud = Double.parseDouble(informacion1[0]);
-							double latitud = Double.parseDouble(informacion1[1]);
-
-							String[] informacion2 = infoDestino.split(",");
-							double longitud2 = Double.parseDouble(informacion2[0]);
+							String[] informacion2 = info2.split(",");
 							double latitud2 = Double.parseDouble(informacion2[1]);
+							double longitud2 = Double.parseDouble(informacion2[0]);
 
-							LatLng orig = new LatLng(latitud, longitud);
-							LatLng dest = new LatLng(latitud2, longitud2);
-
+							LatLng nuevo2 = new LatLng(latitud2,longitud2);		
+							
 							LatLng[] arco = new LatLng[2];
 
-							arco[0] = orig;
-							arco[1] = dest;
+							arco[0] = nuevo;
+							arco[1] = nuevo2;
 
 							Polyline path = new Polyline(map); 														
 							path.setOptions(pathOpt); 
 							path.setPath(arco);
-
+							
 						}
-
+						
+						
+						
+						
 					}
-
-
 
 					initMap( map );
 				}
 			}
 
 		} );
-
 
 
 	}
@@ -260,13 +265,15 @@ public class Maps extends MapView {
 				Circle startLoc = new Circle(map);
 				startLoc.setOptions(vertexLocOpt);
 				startLoc.setCenter(nuevo); 
-				startLoc.setRadius(30); //Radio del circulo
+				startLoc.setRadius(4); //Radio del circulo
 				conteo++;
+
+
 
 			}
 
 		}
-		
+
 		System.out.println(conteo);
 
 	}

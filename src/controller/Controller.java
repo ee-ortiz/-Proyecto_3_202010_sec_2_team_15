@@ -137,6 +137,23 @@ public class Controller {
 				modelo.cargarGrafoCompleto();
 				break;
 
+			case 8:
+
+				System.out.println("ingrese latitud inicial: ");
+				double lat1 = lector.nextDouble();
+				System.out.println("ingrese longitud inicial: ");
+				double lon1 = lector.nextDouble();
+				System.out.println("ingrese latitud final: ");
+				double lat2 = lector.nextDouble();
+				System.out.println("ingrese longitud final: ");
+				double lon2 = lector.nextDouble();
+
+				modelo.requerimiento1A(lat1, lon1, lat2, lon2);
+
+
+
+				break;
+
 			default: 
 
 				view.printMessage("--------- \n Opcion Invalida !! \n---------");

@@ -6,6 +6,7 @@ import model.data_structures.Comparendo;
 import model.data_structures.EstacionesPolicia;
 import model.data_structures.GrafoNoDirigido;
 import model.data_structures.Haversine;
+import model.data_structures.Pila;
 import model.data_structures.Queue;
 import model.data_structures.Vertice;
 import sun.security.provider.certpath.Vertex;
@@ -21,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.sun.org.apache.xpath.internal.axes.HasPositionalPredChecker;
+import com.teamdev.jxmaps.Map;
 import com.teamdev.jxmaps.ac;
 
 /**
@@ -256,12 +258,6 @@ public class Modelo {
 
 	}
 
-	public void mostrarMapa(){
-
-		mapa = new Maps("Grafo Bogotá", grafo, cola);
-		mapa.initFrame();
-
-	}
 
 	public void cargarEstacionesPolicia(){
 
@@ -587,6 +583,8 @@ public class Modelo {
 
 					}
 
+
+
 				}
 
 				catch(Exception exc){
@@ -631,16 +629,22 @@ public class Modelo {
 				Integer idVertex =(Integer) e.getAsJsonObject().get("IdVertex").getAsInt();
 				String[] ArcosDestino = e.getAsJsonObject().get("ArcosDestino").getAsString().split("/");
 				String[] CostoArcos = e.getAsJsonObject().get("CostoArcos").getAsString().split("/");
+				String[] CostoArcos2 = e.getAsJsonObject().get("CostoArcos2").getAsString().split("/");
 
 				if(ArcosDestino.length!=0){
 
 					for(int i = 0; i<ArcosDestino.length; i++){
 
-						if(!ArcosDestino[i].equals("") && !CostoArcos[i].equals("")){
+						if(!ArcosDestino[i].equals("") && !CostoArcos[i].equals("") && !CostoArcos2[i].equals("")){
 							Integer idDestino = (Integer) Integer.parseInt(ArcosDestino[i]);
 							double costo = Double.parseDouble(CostoArcos[i]);
+							double costo2 = Double.parseDouble(CostoArcos2[i]);
 
 							grafo.agregarArco(idVertex, idDestino, costo);
+							grafo.darArco(idVertex, idDestino).cambiarCosto2(costo2);
+							grafo.darArco(idDestino, idVertex).cambiarCosto2(costo2);
+
+
 						}
 
 					}
@@ -744,5 +748,91 @@ public class Modelo {
 		}
 
 	}
-}
 
+	public void requerimiento1A(double latInicial, double lonInicial, double latFinal, double lonFinal){
+
+		// como  es camino de costo minimo tengo que hacer dijkstra sobre el el vertice inicial
+
+		Integer idInicial = requerimientoParteInicial1(latInicial, lonInicial);
+
+		Integer idFinal = requerimientoParteInicial1(latFinal, lonFinal);
+
+		grafo.Dijkstra(idInicial);
+
+		Pila<Vertice<Integer, String>> pila = new Pila<>(20);
+
+		Vertice<Integer, String> actual = grafo.darVertice(idFinal);
+
+		Arco<Integer, String> llegada = actual.darArcoLlegada();
+
+		if(llegada != null){
+
+			while(actual.darId() != idInicial){
+
+				pila.push(actual);
+				actual = actual.darArcoLlegada().darOrigen();
+			}
+
+			// cuando termine el while actual sera igual al vertice inicial
+
+			pila.push(actual);
+
+			Queue<Vertice<Integer, String>> camino = new Queue<>();
+
+
+			System.out.println("Total de vertices que hay en el camino es: " + pila.consultarTamano());
+			System.out.println("\nEl camino a seguir es el siguiente: \n");
+			System.out.println("Vertices (En orden: id,longitud,latitud - Costo):");
+
+			double costoAcumulado = 0;
+
+			while(!pila.estaVacia()){
+
+				Vertice<Integer, String> tope = pila.pop();
+				camino.enqueue(tope);
+
+				Arco<Integer, String> llega = tope.darArcoLlegada();
+
+				double costoMinimo = 0;
+
+				if(llega!=null){
+
+					costoMinimo = llega.darCosto();
+				}
+
+				System.out.println("- " + tope.darId()+"," + tope.darInfo() + " -Costo: " + costoMinimo);
+
+				costoAcumulado += costoMinimo;
+
+			}
+
+			System.out.println();
+			System.out.println("Distancia estimada : " + costoAcumulado);
+
+			mapa = new Maps("Requerimiento 1A", camino);
+			mapa.visuaLizarGrafo1A();
+			mapa.initFrame();
+
+
+
+		}
+
+		else{
+
+			System.out.println();
+			System.out.println("No existe un camino entre los los vertices dados");
+
+		}
+
+		System.out.println();
+
+
+		// ahora falta pintar en el mapa
+
+
+	}
+
+
+
+
+}

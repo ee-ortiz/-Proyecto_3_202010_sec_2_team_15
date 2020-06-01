@@ -1,6 +1,6 @@
 package model.data_structures;
 
-public class Arco<K extends Comparable<K>, V > {
+public class Arco<K extends Comparable<K>, V >{
 
 	private double costo;
 	private double costo2;

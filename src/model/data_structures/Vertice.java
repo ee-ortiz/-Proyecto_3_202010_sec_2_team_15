@@ -2,7 +2,7 @@ package model.data_structures;
 
 import java.util.Iterator;
 
-public class Vertice <K extends Comparable<K>, V >{
+public class Vertice <K extends Comparable<K>, V > implements Comparable<Vertice<K, V>>{
 
 	private K idVtce;
 	private V infoVtce;
@@ -12,6 +12,7 @@ public class Vertice <K extends Comparable<K>, V >{
 	private Bag<Arco<K,V>> adyacentes;
 	private Bag<EstacionesPolicia> masCercanas;
 	private Bag<Comparendo> comparendos;
+	private double costoAcumulado;
 
 	public Vertice( K id, V info ){
 
@@ -23,6 +24,7 @@ public class Vertice <K extends Comparable<K>, V >{
 		marca = false;
 		arcoLlegada = null;
 		color = -1; // se inicializa con un color menor que 0 (Para efectos practicos menor que 0 es un color invalido)
+		costoAcumulado = 0; // se inicializa en 0 el costo acumulado, este costo servira para el algoritmo de dijkstra
 
 	}
 
@@ -164,7 +166,48 @@ public class Vertice <K extends Comparable<K>, V >{
 		return comparendos;
 	}
 
+	public double darCostoAcumulado(){
+
+		return costoAcumulado;
+
+	}
+
+	public void cambiarCostoAcumulado(double costo){
+
+		costoAcumulado = costo;
+	}
+
+	public void  cambiarArcoLlegada(Arco<K, V>  llegada){
+
+		arcoLlegada = llegada;
+	}
+
+	public Arco<K, V> darArcoLlegada(){
+
+		return arcoLlegada;
+	}
+
+	// comparador para costo1
+	public int compareTo(Vertice<K, V> o) {
+
+		double resultado = this.darCostoAcumulado() - o.darCostoAcumulado()*(-1);
+
+		if(resultado<0){
+
+			return -1;
+		}
+
+		else if(resultado >0){
+			
+			return 1;
+
+		}
+
+		else{
+			return 0;
+		}
 
 
+	}
 
 }
