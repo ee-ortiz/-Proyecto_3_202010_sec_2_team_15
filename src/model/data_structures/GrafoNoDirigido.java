@@ -210,6 +210,23 @@ public class GrafoNoDirigido <K extends Comparable<K>, V> {
 
 	}
 
+	// limpia el grafo desmarcando y reiniciando costos acumulados
+	public void limpiar(){
+
+
+		Iterator<K> iter = vertices.keys();
+
+		while(iter.hasNext()){
+
+			K actual = iter.next();
+			Vertice<K, V> aDesmarcar = vertices.get(actual).get(0);
+			aDesmarcar.desmarcar();
+			aDesmarcar.cambiarCostoAcumulado(0);
+		}
+
+
+	}
+
 	// bfs
 	public void bfs(K idOrigen, int color){
 
@@ -372,7 +389,59 @@ public class GrafoNoDirigido <K extends Comparable<K>, V> {
 			}
 
 		}
-		
+
 	}
+
+
+	// algoritmo para MST
+	public void MST(K idInicial){
+
+		Vertice<K, V> inicial = this.darVertice(idInicial);
+
+		inicial.marcar(1, null);  // el arco llegada del vertice inicial es null
+
+		MaxHeapCP<Arco<K, V>> frenteExploracion = new MaxHeapCP<>(); // PQ orientada a costo de arcos
+
+		Iterator<Arco<K, V>> iter = inicial.darAdyacentes();
+
+		while(iter!= null && iter.hasNext()){
+
+			Arco<K, V> actual = iter.next();
+			Vertice<K, V> act = actual.darDestino();
+			act.cambiarArcoLlegada(actual);
+			frenteExploracion.insert(actual, null);
+		}
+
+		while(!frenteExploracion.isEmpty()){
+
+			Arco<K, V> sacado = frenteExploracion.delMax(null);
+
+			if(!sacado.darDestino().darMarca()){
+
+				sacado.darDestino().marcar(1, sacado);
+
+				Iterator<Arco<K, V>> iter2 = sacado.darDestino().darAdyacentes();
+
+				while(iter2!=null && iter2.hasNext()){
+
+					Arco<K, V> adj = iter2.next();
+
+					Vertice<K, V> dest = adj.darDestino();
+
+					if(!dest.darMarca()){
+
+						dest.cambiarArcoLlegada(adj);
+						frenteExploracion.insert(adj, null);
+
+					}
+
+				}
+			}
+		}
+		
+		
+
+	}
+
 
 }

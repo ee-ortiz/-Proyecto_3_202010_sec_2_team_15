@@ -154,6 +154,12 @@ public class Controller {
 
 				break;
 
+			case 9:
+
+				modelo.requerimiento2A(20);
+
+				break;
+
 			default: 
 
 				view.printMessage("--------- \n Opcion Invalida !! \n---------");

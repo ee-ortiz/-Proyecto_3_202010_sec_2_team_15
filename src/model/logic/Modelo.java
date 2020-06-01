@@ -6,9 +6,11 @@ import model.data_structures.Comparendo;
 import model.data_structures.EstacionesPolicia;
 import model.data_structures.GrafoNoDirigido;
 import model.data_structures.Haversine;
+import model.data_structures.MaxHeapCP;
 import model.data_structures.Pila;
 import model.data_structures.Queue;
 import model.data_structures.Vertice;
+import model.data_structures.Comparendo.ComparadorXGravedad;
 import sun.security.provider.certpath.Vertex;
 
 import java.io.FileNotFoundException;
@@ -21,9 +23,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
+import com.sun.javafx.geom.Arc2D;
 import com.sun.org.apache.xpath.internal.axes.HasPositionalPredChecker;
 import com.teamdev.jxmaps.Map;
 import com.teamdev.jxmaps.ac;
+
+import javafx.scene.shape.Arc;
 
 /**
  * Definicion del modelo del mundo
@@ -813,6 +818,8 @@ public class Modelo {
 			mapa.visuaLizarGrafo1A();
 			mapa.initFrame();
 
+			grafo.limpiar(); // se desmarcan los vertices para que los otros requerimientos  se puedan realizar correctamente
+
 
 
 		}
@@ -832,7 +839,146 @@ public class Modelo {
 
 	}
 
+	public void requerimiento2A(int M){
+
+		/*Determinar la red de comunicaciones que soporte la instalación de cámaras de video
+		en los M puntos donde se presentan los comparendos de mayor gravedad.
+		Se debe ingresar el número M de comparendos que se requieren.
+		El distrito quiere instalar una red de comunicaciones que le permita la instalación de
+		cámaras de video en M sitios; sin embargo, se requiere que esta red tenga el menor 
+		costo de instalación posible. El costo de instalación de la red es de U$10000 por cada
+		kilómetro extendido.
+		Con la finalidad de que la red sea eficiente se seleccionaron como puntos de supervisión
+		los M vértices donde se presentan los comparendos de mayor gravedad. Para saber si
+		un comparendo es más grave que otro primero se mira el tipo de servicio: Público es
+		más grave que Oficial y Oficial es más grave que Particular; si dos comparendos tienen
+		el mismo tipo de servicio se compara el código de la infracción (campo INFRACCION)
+		usando el orden lexicográfico (forma de comparación de los Strings en Java, A12 es más
+		grave que A11 y B10 es más grave que A10).*/
+
+		// primero se iteran los comparendos del grafo para agregarlos a una cola de prioridad por gravedadd
+
+		Iterator<Integer> iter = grafo.darVertices().keys();
+
+		ComparadorXGravedad comparar = new ComparadorXGravedad();
+
+		MaxHeapCP<Comparendo> gravedad = new MaxHeapCP<>();
+
+		while(iter!=null && iter.hasNext()){
+
+			Integer actual = iter.next();
+
+			Vertice<Integer, String> act = grafo.darVertice(actual);
 
 
+			Iterator<Comparendo> iter2 = act.darComparendos().iterator();
+
+			while(iter2!=null && iter2.hasNext()){
+
+				Comparendo current = iter2.next();
+
+				gravedad.insert(current, comparar); 
+
+			}
+
+		}
+
+		// ahora un iterator por los M comparendos mas graves para  hacer la red de comunicaciones
+
+		Iterator<Comparendo> iter3 = gravedad.iterator(comparar);
+
+		int conteo = 0;
+		while(iter3!=null && iter3.hasNext() && conteo<M){
+
+
+			Comparendo actual = iter3.next();
+
+			double lat = actual.latitud;
+			double  lon = actual.longitud;
+
+			Integer id = requerimientoParteInicial1(lat, lon);
+
+			Vertice<Integer, String> vertex = grafo.darVertice(id);
+
+			if(!vertex.darMarca()){
+
+				grafo.MST(id);
+
+			}
+
+			conteo++;
+
+		}	
+
+		// al final tendré todos M comparendos mas graves con MST en sus vertices
+
+
+		// ahora hay que agregar todos los arcos correspondientes a caminos entre los vertices de los comparendos mas graves
+
+		Queue<Arco<Integer, String>> req2A = new Queue<>();
+
+		Iterator<Comparendo> iter4 = gravedad.iterator(comparar); 
+
+		int conteo2 = 0;
+		while(iter4!= null && iter4.hasNext() && conteo2<M){
+
+			Comparendo actual = iter4.next();
+
+			double lat = actual.latitud;
+			double  lon = actual.longitud;
+
+			Integer id = requerimientoParteInicial1(lat, lon); // id a vertice del comparendo
+
+			Vertice<Integer, String> current = grafo.darVertice(id);
+
+			Arco<Integer, String> anterior = current.darArcoLlegada();
+
+			while(anterior!=null){
+
+				if(!anterior.darMarca()){
+
+					anterior.marcar();
+					req2A.enqueue(anterior);
+					anterior = anterior.darOrigen().darArcoLlegada();
+
+				}
+
+
+			}
+
+			conteo2++;
+
+			// en este punto ya tengo una cola con todos los arcos de el arbol de costo minimo del los comparendos mas graves, lo muestro en consola
+
+		}
+
+
+		System.out.println("\nTotal de vertices: " + (req2A.size() + 1));
+
+		System.out.println("Informacion: idVertice Inicial - idVertice final:");
+
+		double costoTotal = 0;
+
+		Iterator<Arco<Integer, String>> iter5 = req2A.iterator();
+
+		while(iter5!=null && iter5.hasNext()){
+
+			Arco<Integer, String> act = iter5.next();
+			act.desmarcar();
+			System.out.println(act.darOrigen().darId() + " - " + act.darDestino().darId());
+			costoTotal += act.darCosto();
+
+		}
+
+		System.out.println("\nCostoTotal: " + costoTotal);
+
+		/*el total de vértices en el componente, los vértices (identificadores), los arcos
+		incluidos (Id vértice inicial e Id vértice final) y el costo (monetario) total.*/
+
+
+		grafo.limpiar();
+
+
+	}
 
 }
