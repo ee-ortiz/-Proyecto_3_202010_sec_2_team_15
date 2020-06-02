@@ -10,6 +10,7 @@ import model.data_structures.MaxHeapCP;
 import model.data_structures.Pila;
 import model.data_structures.Queue;
 import model.data_structures.Vertice;
+import model.data_structures.Vertice.ComparadorXVertice;
 import model.data_structures.Comparendo.ComparadorXGravedad;
 import sun.security.provider.certpath.Vertex;
 
@@ -32,9 +33,11 @@ import javafx.scene.shape.Arc;
 
 /**
  * Definicion del modelo del mundo
+ * @param <V>
+ * @param <K>
  *
  */
-public class Modelo {
+public class Modelo<V, K> {
 	/**
 	 * Atributos del modelo del mundo
 	 */
@@ -976,5 +979,338 @@ public class Modelo {
 
 
 	}
+	public void requerimiento1B(double latInicial, double lonInicial, double latFinal, double lonFinal){
+		// como  es camino de costo minimo tengo que hacer dijkstra sobre el el vertice in|icial
+
+				Integer idInicial = requerimientoParteInicial1(latInicial, lonInicial);
+
+				Integer idFinal = requerimientoParteInicial1(latFinal, lonFinal);
+
+				grafo.Dijkstra2(idInicial);
+
+				Pila<Vertice<Integer, String>> pila = new Pila<>(20);
+
+				Vertice<Integer, String> actual = grafo.darVertice(idFinal);
+
+				Arco<Integer, String> llegada = actual.darArcoLlegada();
+
+				if(llegada != null){
+
+					while(actual.darId() != idInicial){
+
+						pila.push(actual);
+						actual = actual.darArcoLlegada().darOrigen();
+					}
+
+					// cuando termine el while actual sera igual al vertice inicial
+
+					pila.push(actual);
+
+					Queue<Vertice<Integer, String>> camino = new Queue<>();
+
+
+					System.out.println("Total de vertices que hay en el camino es: " + pila.consultarTamano());
+					System.out.println("\nEl camino a seguir es el siguiente: \n");
+					System.out.println("Vertices (En orden: id,longitud,latitud - Costo):");
+
+					double costoAcumulado = 0;
+
+					while(!pila.estaVacia()){
+
+						Vertice<Integer, String> tope = pila.pop();
+						camino.enqueue(tope);
+
+						Arco<Integer, String> llega = tope.darArcoLlegada();
+
+						double costoMinimo = 0;
+
+						if(llega!=null){
+
+							costoMinimo = llega.darCosto();
+						}
+
+						System.out.println("- " + tope.darId()+"," + tope.darInfo() + " -Costo: " + costoMinimo);
+
+						costoAcumulado += costoMinimo;
+
+					}
+
+					System.out.println();
+					System.out.println("Distancia estimada : " + costoAcumulado);
+
+					mapa = new Maps("Requerimiento 1B", camino, null);
+					mapa.visuaLizarGrafo1A();
+					mapa.initFrame();
+
+
+
+				}
+
+				else{
+
+					System.out.println();
+					System.out.println("No existe un camino entre los los vertices dados");
+
+				}
+
+				System.out.println();
+
+
+				// ahora falta pintar en el mapa
+	}
+	public void requerimiento2b(int M){
+
+
+		// primero se iteran los comparendos del grafo para agregarlos a una cola de prioridad por gravedadd
+
+		Iterator<Integer> iter = grafo.darVertices().keys();
+
+		ComparadorXVertice comparar = new ComparadorXVertice();
+
+		MaxHeapCP<Vertice<Integer,String>> gravedad = new MaxHeapCP<>();
+
+		while(iter!=null && iter.hasNext()){
+
+			Integer actual = iter.next();
+
+			Vertice<Integer, String> act = grafo.darVertice(actual);
+			gravedad.insert2(act, comparar);
+		}
+
+		// ahora un iterator por los M comparendos mas graves para  hacer la red de comunicaciones
+
+		Iterator<Vertice<Integer, String>> iter3 = gravedad.iterator2(comparar);
+
+		int conteo = 0;
+		while(iter3!=null && conteo<M &&  iter3.hasNext()){
+
+
+			Vertice<Integer,String> actual = iter3.next();
+
+
+			grafo.MST(actual.darId());
+
+			conteo++;
+
+		}	
+
+		// al final tendré todos M comparendos mas graves con MST en sus vertices
+
+
+		// ahora hay que agregar todos los arcos correspondientes a caminos entre los vertices de los comparendos mas graves
+
+		Queue<Arco<Integer, String>> req2A = new Queue<>();
+
+		Iterator<Vertice<Integer, String>> iter4 = gravedad.iterator2(comparar); 
+
+		conteo = 0;
+		while(iter4!= null && conteo <M && iter4.hasNext()){
+
+			Vertice<Integer, String> actual = iter4.next();
+
+		
+
+			 // id a vertice del comparendo
+
+			Vertice<Integer, String> current = grafo.darVertice(actual.darId());
+
+			Arco<Integer, String> anterior = current.darArcoLlegada();
+
+			while(anterior!=null){
+
+				if(!anterior.darMarca()){
+
+					anterior.marcar();
+					req2A.enqueue(anterior);
+					anterior = anterior.darOrigen().darArcoLlegada();
+
+				}
+
+
+			}
+
+			conteo++;
+
+			// en este punto ya tengo una cola con todos los arcos de el arbol de costo minimo del los comparendos mas graves, lo muestro en consola
+
+		}
+
+
+		System.out.println("\nTotal de vertices: " + (req2A.size() + 1));
+
+		System.out.println("Informacion: idVertice Inicial - idVertice final:");
+
+		double costoTotal = 0;
+
+		Iterator<Arco<Integer, String>> iter5 = req2A.iterator();
+
+		while(iter5!=null && iter5.hasNext()){
+
+			Arco<Integer, String> act = iter5.next();
+			act.desmarcar();
+			System.out.println(act.darOrigen().darId() + " - " + act.darDestino().darId());
+			costoTotal += act.darCosto();
+
+		}
+
+		System.out.println("\nCostoTotal: U$" + costoTotal*10000);
+
+		// ahora mostrar el mapa
+
+		mapa = new Maps("Requerimiento 2B", null, req2A);
+		mapa.visuaLizarGrafo2A();
+		mapa.initFrame();
+
+		grafo.limpiar();
+
+
+	}
+	public void requerimiento1C(int M){
+
+		MaxHeapCP<Comparendo> masGraves = new MaxHeapCP<>();
+
+		Queue<Vertice<Integer, String>> verticesConEstacionesPolicia = new Queue<>();
+
+		ComparadorXGravedad comp = new ComparadorXGravedad();
+
+		Iterator<Integer>  iter =  grafo.darVertices().keys();
+
+		while(iter.hasNext()){
+
+			Integer act = iter.next();
+			Vertice<Integer, String> current = grafo.darVertice(act);
+
+			if(!current.darComparendos().isEmpty()){
+
+				Iterator<Comparendo> iter2 = current.darComparendos().iterator();
+
+				while(iter2.hasNext()){
+
+					Comparendo ac = iter2.next();
+					masGraves.insert(ac, comp);
+				}
+
+			}
+
+			if(!current.darMasCercanas().isEmpty()){
+
+				verticesConEstacionesPolicia.enqueue(current);
+			}
+
+		}
+
+
+		Iterator<Comparendo> graves = masGraves.iterator(comp);
+
+		int conteo = 0;
+		while(conteo < M && graves.hasNext()){
+
+			Comparendo actual = graves.next();
+			double lat = actual.latitud;
+			double lon = actual.longitud;
+
+			Integer id = requerimientoParteInicial1(lat, lon);
+
+			Iterator<Vertice<Integer, String>> iter2 = verticesConEstacionesPolicia.iterator();
+
+			Vertice<Integer, String> menor = null;
+			double costoAcumMenor = 0;
+
+			while(iter2.hasNext()){
+
+				Vertice<Integer, String> a = iter2.next();
+				grafo.Dijkstra(a.darId()); // hago dijkstra 
+
+				double costo = grafo.darVertice(id).darCostoAcumulado();
+
+				if(menor == null){
+
+					menor = a;
+					costoAcumMenor =  costo;
+				}
+
+				else{
+
+					if(costo<=costoAcumMenor){
+
+						if(costo == 0 && id == a.darId()){
+
+							menor = a;
+							costoAcumMenor = costo;
+
+						}
+
+						else{
+
+							menor = a;
+							costoAcumMenor = costo;
+						}
+					}
+				}
+
+
+
+				grafo.limpiar(); // lo limpio para un  nuevo Dijkstra con el siguiente vertice
+
+			}
+			grafo.limpiar();
+			conteo++;
+
+			// cuando  termino el while tendre el vertice de estacion de policia mas  cercano al comparendo  grave
+
+			if(menor!=null){
+				
+				grafo.Dijkstra(menor.darId());
+
+
+				System.out.println("Camino comparendo  " + conteo + ": (idOrigen - idDestino)");
+
+				Vertice<Integer, String> destino =  grafo.darVertice(id);
+
+
+
+				Arco<Integer, String> orig =  destino.darArcoLlegada();
+
+				Vertice<Integer, String> origen;
+
+				if(orig == null){
+
+					origen  = null;
+
+				}
+
+				else{
+
+					origen  = orig.darOrigen();
+				}
+
+				if(origen == null){
+
+					System.out.println(" Null - " + destino.darId());
+				}
+
+				else{
+
+					System.out.println(origen.darId() + " - " + destino.darId());
+
+				}
+
+				while(origen !=null && origen.darArcoLlegada()!=null){
+
+					destino = origen;
+					origen = origen.darArcoLlegada().darOrigen();
+					System.out.println(origen.darId() + " - " + destino.darId());
+
+				}
+				System.out.println("Costo total = " + grafo.darVertice(id).darCostoAcumulado());
+
+			}
+
+			grafo.limpiar();
+
+		}
+
+	}
+
 
 }

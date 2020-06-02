@@ -82,6 +82,17 @@ public class MaxHeapCP<T extends Comparable<T>>  {
 		swim(n, pComparador);
 		assert isMaxHeap();
 	}
+	public void insert2(T x, Comparator<Vertice> pComparador) {
+
+		// double size of array if necessary
+		if (n == pq.length - 1) resize(2 * pq.length);
+
+		// add x, and percolate it up to maintain heap invariant
+		pq[++n] = x;
+		swim2(n, pComparador);
+		assert isMaxHeap();
+	}
+	
 
 	/**
 	 * Removes and returns a largest key on this priority queue.
@@ -99,6 +110,17 @@ public class MaxHeapCP<T extends Comparable<T>>  {
 		assert isMaxHeap();
 		return max;
 	}
+	public T delMax2(Comparator<Vertice> pComparador) {
+		if (isEmpty()) throw new NoSuchElementException("Priority queue underflow");
+		T max = pq[1];
+		exch(1, n--);
+		sink2(1, pComparador);
+		pq[n+1] = null;     // to avoid loitering and help with garbage collection
+		if ((n > 0) && (n == (pq.length - 1) / 4)) resize(pq.length / 2);
+		assert isMaxHeap();
+		return max;
+	}
+	
 
 
 	/***************************************************************************
@@ -124,6 +146,24 @@ public class MaxHeapCP<T extends Comparable<T>>  {
 		}
 
 	}
+	private void swim2(int k, Comparator<Vertice> pComparador) {
+
+		if(pComparador == null){
+			while (k > 1 && less(k/2, k)) {
+				exch(k, k/2);
+				k = k/2;
+			}
+		}
+		else{
+
+			while (k > 1 && pComparador.compare((Vertice)pq[k/2], (Vertice)pq[k])<0) {
+				exch(k, k/2);
+				k = k/2;
+			}
+		}
+
+	}
+
 
 	private void sink(int k, Comparator<Comparendo> pComparador) {
 		if(pComparador == null){
@@ -140,6 +180,26 @@ public class MaxHeapCP<T extends Comparable<T>>  {
 				int j = 2*k;
 				if (j < n && pComparador.compare((Comparendo) pq[j], (Comparendo) pq[j+1])<0) j++;
 				if (pComparador.compare((Comparendo) pq[k], (Comparendo) pq[j])>=0) break;
+				exch(k, j);
+				k = j;
+			}
+		}
+	}
+	private void sink2(int k, Comparator<Vertice> pComparador) {
+		if(pComparador == null){
+			while (2*k <= n) {
+				int j = 2*k;
+				if (j < n && less(j, j+1)) j++;
+				if (!less(k, j)) break;
+				exch(k, j);
+				k = j;
+			}
+		}
+		else{
+			while (2*k <= n) {
+				int j = 2*k;
+				if (j < n && pComparador.compare((Vertice) pq[j], (Vertice) pq[j+1])<0) j++;
+				if (pComparador.compare((Vertice) pq[k], (Vertice) pq[j])>=0) break;
 				exch(k, j);
 				k = j;
 			}
@@ -196,6 +256,9 @@ public class MaxHeapCP<T extends Comparable<T>>  {
 	public Iterator<T> iterator(Comparator<Comparendo> pComparador) {
 		return new HeapIterator(pComparador);
 	}
+	public Iterator<T> iterator2(Comparator<Vertice> pComparador) {
+		return new HeapIterator2(pComparador);
+	}
 
 	private class HeapIterator implements Iterator<T> {
 
@@ -219,6 +282,30 @@ public class MaxHeapCP<T extends Comparable<T>>  {
 		public T next() {
 			if (!hasNext()) throw new NoSuchElementException();
 			return copy.delMax(this.pComparador);
+		}
+	}
+	private class HeapIterator2 implements Iterator<T> {
+
+		// create a new pq
+		private MaxHeapCP<T> copy;
+		private Comparator<Vertice> pComparador;
+
+		// add all items to copy of heap
+		// takes linear time since already in heap order so no keys move
+		public HeapIterator2(Comparator<Vertice> pComparador) {
+			this.pComparador = pComparador;
+			copy = new MaxHeapCP<T>(size());
+
+			for (int i = 1; i <= n; i++)
+				copy.insert2(pq[i], this.pComparador);
+		}
+
+		public boolean hasNext()  { return !copy.isEmpty();                     }
+		public void remove()      { throw new UnsupportedOperationException();  }
+
+		public T next() {
+			if (!hasNext()) throw new NoSuchElementException();
+			return copy.delMax2(this.pComparador);
 		}
 	}
 

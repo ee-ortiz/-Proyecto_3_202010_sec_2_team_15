@@ -1,5 +1,6 @@
 package model.data_structures;
 
+import java.util.Comparator;
 import java.util.Iterator;
 
 public class Vertice <K extends Comparable<K>, V > implements Comparable<Vertice<K, V>>{
@@ -208,6 +209,16 @@ public class Vertice <K extends Comparable<K>, V > implements Comparable<Vertice
 		}
 
 
+	}
+	public static class ComparadorXVertice implements Comparator<Vertice> {
+
+
+		@Override
+		public int compare(Vertice o1, Vertice o2) {
+			// TODO Auto-generated method stub
+			return o1.darComparendos().size()-o2.darComparendos().size();
+		}
+		
 	}
 	
 	

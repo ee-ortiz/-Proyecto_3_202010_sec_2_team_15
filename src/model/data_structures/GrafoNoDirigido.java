@@ -446,5 +446,66 @@ public class GrafoNoDirigido <K extends Comparable<K>, V> {
 
 	}
 
+	public void Dijkstra2(K idInicial){
 
+
+		Vertice<K, V> inicial = this.darVertice(idInicial);
+
+		inicial.marcar(1, null);  // el arco llegada del vertice inicial es null
+
+		MaxHeapCP<Vertice<K, V>> frenteExploracion = new MaxHeapCP<>(); // tiene que ser una priority queue orientada a costo
+
+		Iterator<Arco<K, V>> iter = inicial.darAdyacentes();
+
+		while(iter!= null && iter.hasNext()){
+
+			Arco<K, V> actual = iter.next();
+			Vertice<K, V> act = actual.darDestino();
+			act.cambiarCostoAcumulado(actual.darCosto2());
+			act.cambiarArcoLlegada(actual);
+			frenteExploracion.insert(act, null);
+		}
+
+		while(!frenteExploracion.isEmpty()){
+
+			Vertice<K, V> sacado = frenteExploracion.delMax(null);
+
+			if(!this.darVertice(sacado.darId()).darMarca()){
+
+				this.darVertice(sacado.darId()).marcar(1, sacado.darArcoLlegada());
+
+				Iterator<Arco<K, V>> iter2 = sacado.darAdyacentes();
+
+				while(iter2!=null && iter2.hasNext()){
+
+					Arco<K, V> adj = iter2.next();
+
+					Vertice<K, V> dest = adj.darDestino();
+
+					if(!dest.darMarca()){
+
+						double acumulado = sacado.darCostoAcumulado() + adj.darCosto2();
+
+						if(dest.darCostoAcumulado()==0){
+
+							dest.cambiarCostoAcumulado(acumulado);
+							dest.cambiarArcoLlegada(adj);
+
+						}
+
+						else if(acumulado < dest.darCostoAcumulado()){
+
+							dest.cambiarCostoAcumulado(acumulado);
+							dest.cambiarArcoLlegada(adj);
+
+						}
+
+						frenteExploracion.insert(dest, null);
+					}
+				}
+			}
+
+		}
+		
+	}
 }

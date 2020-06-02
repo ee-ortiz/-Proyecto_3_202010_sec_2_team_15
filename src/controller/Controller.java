@@ -164,8 +164,44 @@ public class Controller {
 				
 
 				break;
+			case 10:
+				System.out.println("ingrese latitud inicial: ");
+				double lat12 = lector.nextDouble();
+				System.out.println("ingrese longitud inicial: ");
+				double lon12 = lector.nextDouble();
+				System.out.println("ingrese latitud final: ");
+				double lat22 = lector.nextDouble();
+				System.out.println("ingrese longitud final: ");
+				double lon22 = lector.nextDouble();
 
+				modelo.requerimiento1B(lat12, lon12, lat22, lon22);
+
+			case 11:
+
+				System.out.println("Ingrese un numero M:");
+				int num1 = lector.nextInt();
+		
+				long start2 = System.currentTimeMillis();
+				modelo.requerimiento2b(num1);		
+				long end2 = System.currentTimeMillis();
+				view.printMessage("Tiempo de carga (s): " + (end2-start2)/1000.0);
+				
+
+				break;
+			case 12:
+
+				System.out.println("Ingrese un numero M:");
+				int num3 = lector.nextInt();
+		
+				long start3 = System.currentTimeMillis();
+				modelo.requerimiento2b(num3);		
+				long end3 = System.currentTimeMillis();
+				view.printMessage("Tiempo de carga (s): " + (end3-start3)/1000.0);
+				
+
+				break;
 			default: 
+				
 
 				view.printMessage("--------- \n Opcion Invalida !! \n---------");
 				break;

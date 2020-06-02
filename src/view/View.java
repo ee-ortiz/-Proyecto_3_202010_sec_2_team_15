@@ -23,8 +23,10 @@ public class View
 		System.out.println("6. Guardar Grafo completo");
 		System.out.println("7. Cargar Grafo completo");
 		System.out.println("8. Requerimiento 1A");
-		
-
+		System.out.println("9. Requerimiento 2A");
+		System.out.println("10.  Requerimiento 1B");
+		System.out.println("11. Requerimiento 2A");
+		System.out.println("12. Requerimiento 1C");
 
 		System.out.println("Dar el numero de opcion a resolver, luego oprimir tecla Return:");
 
