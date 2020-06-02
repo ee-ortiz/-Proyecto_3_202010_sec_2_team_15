@@ -194,7 +194,7 @@ public class Controller {
 				int num3 = lector.nextInt();
 		
 				long start3 = System.currentTimeMillis();
-				modelo.requerimiento2b(num3);		
+				modelo.requerimiento1C(num3);		
 				long end3 = System.currentTimeMillis();
 				view.printMessage("Tiempo de carga (s): " + (end3-start3)/1000.0);
 				
